@@ -1,0 +1,15 @@
+services:
+
+  postgres-order-system:
+    image: postgres:alpine
+    container_name: postgres-order-system
+    environment:
+      POSTGRES_USER: ordersystem
+      POSTGRES_PASSWORD: ordersystem
+      POSTGRES_DB: ordersystemDB
+    ports:
+      - "5435:5432"
+    volumes:
+    - postgres-ordersystem_pg_data:/var/lib/postgresql/data
+    networks:
+      - ordersystem
