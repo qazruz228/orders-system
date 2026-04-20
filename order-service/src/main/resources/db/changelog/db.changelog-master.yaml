@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/001.create-table-orders.sql
+  - include:
+      file: db/changelog/002.create-table-order_item.sql
+  - include:
+      file: db/changelog/003.create-table-products.sql
+  - include:
+      file: db/changelog/004.create-table-inventory.sql
+  - include:
+      file: db/changelog/005.create-table-outbox_events.sql
