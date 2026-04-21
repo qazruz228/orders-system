@@ -1,4 +1,5 @@
--- changeset 4
+-- changeset: 4
+-- author: Sergey
 
 CREATE TABLE inventory(
     product_id BIGINT PRIMARY KEY,

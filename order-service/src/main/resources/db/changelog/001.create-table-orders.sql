@@ -1,4 +1,5 @@
--- changeset 1
+-- changeset: 1
+-- author: Sergey
 
 create table orders(
     id BIGSERIAL primary key,

@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "inventory")
@@ -29,8 +30,13 @@ public class Inventory {
     @Column(nullable = false)
     private Integer quantity;
 
+    @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Version
+    private Long version;
+
 }
 
 

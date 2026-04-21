@@ -1,4 +1,5 @@
--- changeset 3
+-- changeset: 3
+-- author: Sergey
 
 CREATE TABLE products(
     id BIGSERIAL PRIMARY KEY,

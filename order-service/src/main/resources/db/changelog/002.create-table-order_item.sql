@@ -1,4 +1,5 @@
--- changeset 2
+-- changeset: 2
+-- author: Sergey
 
 CREATE TABLE order_item(
     id         BIGSERIAL PRIMARY KEY,

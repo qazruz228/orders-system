@@ -15,6 +15,6 @@ public class OrderStatusConverter implements AttributeConverter<OrderStatus, Str
 
     @Override
     public OrderStatus convertToEntityAttribute(String orderStatusEnum) {
-        return (orderStatusEnum == null) ? null : OrderStatus.valueOf(orderStatusEnum);
+        return (orderStatusEnum == null) ? null : OrderStatus.fromString(orderStatusEnum);
     }
 }

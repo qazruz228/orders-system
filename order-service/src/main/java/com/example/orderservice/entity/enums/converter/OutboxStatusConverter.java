@@ -13,6 +13,6 @@ public class OutboxStatusConverter implements AttributeConverter<OutboxStatus, S
 
     @Override
     public OutboxStatus convertToEntityAttribute(String outboxStatusEnum) {
-        return (outboxStatusEnum == null) ? null : OutboxStatus.valueOf(outboxStatusEnum);
+        return (outboxStatusEnum == null) ? null : OutboxStatus.fromString(outboxStatusEnum);
     }
 }

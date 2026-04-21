@@ -1,4 +1,5 @@
--- changeset 5
+-- changeset: 5
+-- author: Sergey
 
 CREATE TABLE outbox_events(
     id            BIGSERIAL   NOT NULL,
