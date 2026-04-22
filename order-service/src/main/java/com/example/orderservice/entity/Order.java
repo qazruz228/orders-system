@@ -8,6 +8,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -37,6 +39,9 @@ public class Order {
 
     @Column(name = "delivery_address", columnDefinition = "TEXT")
     private String deliveryAddress;
+
+    @Column(name = "unique_order_id")
+    private UUID uniqueOrderId;
 
     @Version
     private Long version;
