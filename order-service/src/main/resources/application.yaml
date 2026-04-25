@@ -17,6 +17,46 @@ spring:
         format_sql: true
 
 
+  kafka:
+    bootstrap-servers: localhost:9092,localhost:9094,localhost:9096
+
+    producer:
+      acks: all
+      retries: 3
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+    consumer:
+      group-id: order-service-group
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+    listener:
+      ack-mode: manual
+
+#    topics:
+#      - name: "order-events"
+#        partitions: 3
+#        replication-factor: 3
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #  разделить на prod и dev
 #  в dev использовать h2
 #

@@ -1,15 +1,20 @@
 package com.example.orderservice.dto;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.util.UUID;
+import java.math.BigDecimal;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class CreateOrderResponse {
 
-public UUID uniqueOrderId;
-
-public String message;
-
-
+    private String message;
+    private BigDecimal totalAmount;
 }

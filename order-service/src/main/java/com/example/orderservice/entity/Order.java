@@ -30,18 +30,14 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Convert(converter = OrderStatusConverter.class)
-    @Column(nullable = false, length = 50)
-    private OrderStatus status;
-
     @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
     @Column(name = "delivery_address", columnDefinition = "TEXT")
     private String deliveryAddress;
 
-    @Column(name = "unique_order_id")
-    private UUID uniqueOrderId;
+    @Column(name = "request_id")
+    private Long requestId;
 
     @Version
     private Long version;
