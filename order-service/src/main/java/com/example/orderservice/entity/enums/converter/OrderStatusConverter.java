@@ -1,20 +1,20 @@
 package com.example.orderservice.entity.enums.converter;
 
-import com.example.orderservice.entity.enums.OrderStatus;
+import com.example.orderservice.entity.enums.OrderEventStatus;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
 @Converter(autoApply = true)
-public class OrderStatusConverter implements AttributeConverter<OrderStatus, String> {
+public class OrderStatusConverter implements AttributeConverter<OrderEventStatus, String> {
 
 
     @Override
-    public String convertToDatabaseColumn(OrderStatus orderStatusEnum) {
+    public String convertToDatabaseColumn(OrderEventStatus orderStatusEnum) {
         return (orderStatusEnum == null) ? null : orderStatusEnum.toString() ;
     }
 
     @Override
-    public OrderStatus convertToEntityAttribute(String orderStatusEnum) {
-        return (orderStatusEnum == null) ? null : OrderStatus.fromString(orderStatusEnum);
+    public OrderEventStatus convertToEntityAttribute(String orderStatusEnum) {
+        return (orderStatusEnum == null) ? null : OrderEventStatus.fromString(orderStatusEnum);
     }
 }

@@ -17,4 +17,5 @@ public class CreateOrderResponse {
 
     private String message;
     private BigDecimal totalAmount;
+    private Long uniqId;
 }

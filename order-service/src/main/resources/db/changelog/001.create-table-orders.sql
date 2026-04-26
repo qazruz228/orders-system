@@ -5,7 +5,7 @@ CREATE TABLE orders (
     id BIGSERIAL PRIMARY KEY,
     total_amount NUMERIC(10, 2) NOT NULL,
     delivery_address TEXT,
-    request_id VARCHAR(50) NOT NULL,
+    uniq_id BIGINT NOT NULL,
     version BIGINT,
     created_at TIMESTAMP
 );

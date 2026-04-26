@@ -1,14 +1,11 @@
 package com.example.orderservice.entity;
 
-import com.example.orderservice.entity.enums.OrderStatus;
-import com.example.orderservice.entity.enums.converter.OrderStatusConverter;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,8 +33,8 @@ public class Order {
     @Column(name = "delivery_address", columnDefinition = "TEXT")
     private String deliveryAddress;
 
-    @Column(name = "request_id")
-    private Long requestId;
+    @Column(name = "uniq_id")
+    private Long uniqId;
 
     @Version
     private Long version;
