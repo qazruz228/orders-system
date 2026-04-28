@@ -27,10 +27,14 @@ public class OrderService {
     public CreateOrderResponse createOrder(CreateOrderRequest request) {
         Map<Long, Product> productsById = productValidator.validateCreateOrderRequest(request);
         request.setTotalAmount(productService.updateProductQuantitiesAndCalculateTotal(request, productsById));
-        request.setUniqId(Long.valueOf(UUID.randomUUID().toString()));
+        request.setUniqId(UUID.randomUUID());
 
         Order order = orderMapper.toOrder(request);
         orderRepository.save(order);
+
+
+
+
 
 
 

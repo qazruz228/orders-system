@@ -13,6 +13,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -28,7 +29,7 @@ public class CreateOrderRequest {
     private BigDecimal totalAmount;
 
     @NotNull(message = "uniqId must not be null")
-    private Long uniqId;
+    private UUID uniqId;
 
     @Valid
     @NotEmpty(message = "order items must not be empty")

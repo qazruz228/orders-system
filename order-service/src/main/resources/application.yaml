@@ -19,12 +19,20 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092,localhost:9094,localhost:9096
-
     producer:
+      client-id: order-service-producer
       acks: all
-      retries: 3
+      retries: 2147483647
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+        compression.type: snappy
+        batch.size: 32768
+        linger.ms: 20
+        delivery.timeout.ms: 120000
+        request.timeout.ms: 30000
 
     consumer:
       group-id: order-service-group
@@ -36,10 +44,17 @@ spring:
     listener:
       ack-mode: manual
 
-#    topics:
-#      - name: "order-events"
-#        partitions: 3
-#        replication-factor: 3
+app:
+  kafka:
+    topics:
+      order-events:
+        name: order-events
+        partitions: 3
+        replicas: 3
+        configs:
+          min.insync.replicas: 2
+          cleanup.policy: delete
+          retention.ms: 604800000
 
 
 

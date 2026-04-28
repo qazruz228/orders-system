@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -17,5 +18,5 @@ public class CreateOrderResponse {
 
     private String message;
     private BigDecimal totalAmount;
-    private Long uniqId;
+    private UUID uniqId;
 }
