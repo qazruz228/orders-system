@@ -1,5 +1,6 @@
 package com.example.orderservice.error.handler;
 
+import com.example.orderservice.error.exception.JsonConversionException;
 import com.example.orderservice.error.exception.OrderValidationException;
 import com.example.orderservice.error.response.ApiErrorResponse;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,15 @@ import java.util.List;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(JsonConversionException.class)
+    public ResponseEntity<ApiErrorResponse> handleJsonConversionException(JsonConversionException exception) {
+        return buildResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "JSON conversion failed",
+                List.of(exception.getMessage())
+        );
+    }
 
     @ExceptionHandler(OrderValidationException.class)
     public ResponseEntity<ApiErrorResponse> handleOrderValidationException(OrderValidationException exception) {

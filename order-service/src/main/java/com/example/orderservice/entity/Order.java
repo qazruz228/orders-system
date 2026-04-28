@@ -34,9 +34,6 @@ public class Order {
     @Column(name = "delivery_address", columnDefinition = "TEXT")
     private String deliveryAddress;
 
-    @Column(name = "uniq_id")
-    private UUID uniqId;
-
     @Version
     private Long version;
 

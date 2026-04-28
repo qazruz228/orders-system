@@ -1,7 +1,8 @@
-package com.example.orderservice.entity.enums;
+package com.example.orderservice.events.enums;
 
 public enum OutboxStatus {
     NEW,
+    PROCESSING,
     SENT,
     FAILED;
 

@@ -17,6 +17,5 @@ import java.util.UUID;
 public class CreateOrderResponse {
 
     private String message;
-    private BigDecimal totalAmount;
     private UUID uniqId;
 }

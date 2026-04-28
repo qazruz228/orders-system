@@ -1,6 +1,6 @@
-package com.example.orderservice.entity.enums.converter;
+package com.example.orderservice.events.enums.converter;
 
-import com.example.orderservice.entity.enums.OutboxStatus;
+import com.example.orderservice.events.enums.OutboxStatus;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 

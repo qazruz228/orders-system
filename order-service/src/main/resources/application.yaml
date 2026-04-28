@@ -22,7 +22,7 @@ spring:
     producer:
       client-id: order-service-producer
       acks: all
-      retries: 2147483647
+      retries: 5
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
       properties:
@@ -33,6 +33,8 @@ spring:
         linger.ms: 20
         delivery.timeout.ms: 120000
         request.timeout.ms: 30000
+
+
 
     consumer:
       group-id: order-service-group
