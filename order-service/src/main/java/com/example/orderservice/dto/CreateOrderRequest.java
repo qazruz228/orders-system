@@ -28,9 +28,6 @@ public class CreateOrderRequest {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private BigDecimal totalAmount;
 
-    @NotNull(message = "uniqId must not be null")
-    private UUID uniqId;
-
     @Valid
     @NotEmpty(message = "order items must not be empty")
     private List<OrderItemDto> orderItems;

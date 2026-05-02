@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -35,31 +36,34 @@ public class OutboxProcessingService {
 
     @Transactional
     public void markSent(Long eventId) {
-        OutboxEvent event = outboxEventRepository.findById(eventId)
-                .orElseThrow(() -> new IllegalStateException("Outbox event not found: " + eventId));
-
-        event.setOutboxStatus(OutboxStatus.SENT);
-        event.setProcessedAt(LocalDateTime.now());
-        outboxEventRepository.save(event);
+        int updated = outboxEventRepository.updateStatus(eventId, OutboxStatus.SENT, LocalDateTime.now());
+        if (updated == 0) {
+            throw new IllegalStateException("Outbox event not found: " + eventId);
+        }
     }
 
     @Transactional
-    public void handlePublishFailure(Long eventId, int maxRetry, Throwable throwable) {
-        OutboxEvent event = outboxEventRepository.findById(eventId)
-                .orElseThrow(() -> new IllegalStateException("Outbox event not found: " + eventId));
+    public void handlePublishFailure(Long eventId, UUID requestId, Integer currentRetryCount, int maxRetry, Throwable throwable) {
+        LocalDateTime now = LocalDateTime.now();
+        int updated = outboxEventRepository.recordPublishFailure(
+                eventId,
+                maxRetry,
+                OutboxStatus.FAILED,
+                OutboxStatus.NEW,
+                now
+        );
+        if (updated == 0) {
+            throw new IllegalStateException("Outbox event not found: " + eventId);
+        }
 
-        int retry = (event.getRetryCount() == null ? 0 : event.getRetryCount()) + 1;
-        event.setRetryCount(retry);
-        event.setProcessedAt(LocalDateTime.now());
-        event.setOutboxStatus(retry >= maxRetry ? OutboxStatus.FAILED : OutboxStatus.NEW);
+        int nextRetry = (currentRetryCount == null ? 0 : currentRetryCount) + 1;
 
-        outboxEventRepository.save(event);
         log.warn(
-                "Failed to publish outbox event id={} requestId={} retry={} status={}",
-                event.getId(),
-                event.getRequestId(),
-                retry,
-                event.getOutboxStatus(),
+                "Failed to publish outbox event id={} requestId={} retry={} nextStatus={}",
+                eventId,
+                requestId,
+                nextRetry,
+                nextRetry >= maxRetry ? OutboxStatus.FAILED : OutboxStatus.NEW,
                 throwable
         );
     }

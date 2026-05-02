@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Component
@@ -32,18 +31,10 @@ public class OutboxScheduler {
     @Value("${outbox.processing-timeout:PT2M}")
     private Duration processingTimeout;
 
-    private final AtomicBoolean batchInProgress = new AtomicBoolean(false);
-
     @Scheduled(fixedDelayString = "${outbox.polling.interval:30000}")
     public void processOutbox() {
-        if (!batchInProgress.compareAndSet(false, true)) {
-            log.debug("Previous outbox batch is still in progress, skip current schedule tick");
-            return;
-        }
-
         List<OutboxEvent> events = outboxProcessingService.claimNextBatch(batchSize, processingTimeout);
         if (events.isEmpty()) {
-            batchInProgress.set(false);
             return;
         }
 
@@ -53,7 +44,6 @@ public class OutboxScheduler {
 
     private void publishSequentially(List<OutboxEvent> events, int index) {
         if (index >= events.size()) {
-            batchInProgress.set(false);
             return;
         }
 
@@ -68,7 +58,13 @@ public class OutboxScheduler {
                     outboxProcessingService.markSent(event.getId());
                     log.debug("Outbox event id={} sent to topic={}", event.getId(), kafkaTopicProperties.getName());
                 } else {
-                    outboxProcessingService.handlePublishFailure(event.getId(), maxRetry, throwable);
+                    outboxProcessingService.handlePublishFailure(
+                            event.getId(),
+                            event.getRequestId(),
+                            event.getRetryCount(),
+                            maxRetry,
+                            throwable
+                    );
                 }
             } catch (Exception callbackException) {
                 log.error("Outbox callback handling failed for event id={}", event.getId(), callbackException);

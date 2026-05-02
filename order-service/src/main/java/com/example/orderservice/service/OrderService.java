@@ -43,10 +43,10 @@ public class OrderService {
         UUID uniqId = UUID.randomUUID();
 
         request.setTotalAmount(totalAmount);
-        request.setUniqId(uniqId);
 
         Order savedOrder = orderRepository.save(orderMapper.toOrder(request));
         CreateOrderEvent createOrderEvent = requestConverter.convert(request);
+        createOrderEvent.setUniqId(uniqId);
         outboxPublisher.saveEvent(createOrderEvent);
 
         log.info("Created order id={} uniqId={} items={}", savedOrder.getId(), uniqId, request.getOrderItems().size());

@@ -54,7 +54,7 @@ app:
         partitions: 3
         replicas: 3
         configs:
-          min.insync.replicas: 2
+          min.insync.replicas: 3
           cleanup.policy: delete
           retention.ms: 604800000
 

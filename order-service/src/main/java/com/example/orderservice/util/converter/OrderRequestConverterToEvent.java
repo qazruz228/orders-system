@@ -16,7 +16,6 @@ public class OrderRequestConverterToEvent implements Converter<CreateOrderReques
         return CreateOrderEvent.builder()
                 .deliveryAddress(request.getDeliveryAddress())
                 .totalAmount(request.getTotalAmount())
-                .uniqId(request.getUniqId())
                 .status(OrderEventStatus.PENDING)
                 .orderItems(request.getOrderItems())
                 .build();
