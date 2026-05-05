@@ -1,0 +1,30 @@
+добавить группы
+
+Kafka key     → влияет на partition (куда пойдёт сообщение)
+requestId     → влияет на логику обработки (идемпотентность, трассировка)
+
+добавить kafka ui
+
+ack.acknowledge если успешно обработали (это должно быть в try/catch)
+
+
+вместо requestId в кафка сообщении передавать id класса order
+идемпотентность реализовать через uniqueId из класса CreateOrderEvent
+переименовать uniqueId на uniqueOrderNumber и добавить эту переменную в класс Order
+Отправлять сообщения через ProducerRecord засунув в него header requestId
+
+
+
+ПРИМЕР ОТПРАВКИ ЧЕРЕЗ HEADER В ProducerRecord:
+
+  String key = orderId.toString();      // ✅ routing
+  String requestId = UUID.randomUUID().toString(); // ✅ idempotency
+
+  ProducerRecord<String, String> record =
+      new ProducerRecord<>("order-events", key, payload);
+
+  record.headers().add("requestId", requestId.getBytes());
+
+  kafkaTemplate.send(record);
+
+

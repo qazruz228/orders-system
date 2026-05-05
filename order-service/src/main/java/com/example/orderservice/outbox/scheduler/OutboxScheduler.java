@@ -50,7 +50,7 @@ public class OutboxScheduler {
         OutboxEvent event = events.get(index);
         kafkaTemplate.send(
                 kafkaTopicProperties.getName(),
-                String.valueOf(event.getRequestId()),
+                String.valueOf(event.getRequestId()), //НУЖЕН ДЛЯ ИДЕМПОТЕНТНОСТИ
                 event.getPayload()
         ).whenComplete((result, throwable) -> {
             try {
