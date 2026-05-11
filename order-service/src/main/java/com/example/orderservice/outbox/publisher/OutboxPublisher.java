@@ -10,8 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -32,9 +30,10 @@ public class OutboxPublisher {
 
         OutboxEvent outboxEvent = OutboxEvent.builder()
                 .payload(payload)
+                .uniqueOrderNumber(createOrderEvent.getUniqueOrderNumber())
+                .orderId(createOrderEvent.getOrderId())
                 .outboxStatus(OutboxStatus.NEW)
                 .retryCount(INITIAL_RETRY_COUNT)
-                .requestId(UUID.randomUUID())
                 .build();
 
         OutboxEvent savedEvent = outboxEventRepository.save(outboxEvent);

@@ -26,7 +26,7 @@ public class OrderService {
 
     private static final String ORDER_CREATED_MESSAGE =
             "Your order has been accepted, " +
-             "remember your uniqId because it need you for payment, " +
+             "remember your unique_order_number because it need you for payment, " +
              "move to payment-service for payment";
 
     private final ProductService productService;
@@ -40,20 +40,21 @@ public class OrderService {
     public CreateOrderResponse createOrder(CreateOrderRequest request) {
         Map<Long, Product> productsById = productValidator.validateCreateOrderRequest(request);
         BigDecimal totalAmount = productService.updateProductQuantitiesAndCalculateTotal(request, productsById);
-        UUID uniqId = UUID.randomUUID();
+        String uniqId = UUID.randomUUID().toString();
 
         request.setTotalAmount(totalAmount);
 
         Order savedOrder = orderRepository.save(orderMapper.toOrder(request));
         CreateOrderEvent createOrderEvent = requestConverter.convert(request);
-        createOrderEvent.setUniqId(uniqId);
+        createOrderEvent.setUniqueOrderNumber(uniqId);
+        createOrderEvent.setOrderId(savedOrder.getId());
         outboxPublisher.saveEvent(createOrderEvent);
 
         log.info("Created order id={} uniqId={} items={}", savedOrder.getId(), uniqId, request.getOrderItems().size());
 
         return CreateOrderResponse.builder()
                 .message(ORDER_CREATED_MESSAGE)
-                .uniqId(uniqId)
+                .uniqueOrderNumber(uniqId)
                 .build();
     }
 

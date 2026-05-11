@@ -5,7 +5,6 @@ import com.example.orderservice.events.enums.converter.OutboxStatusConverter;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,8 +36,11 @@ public class OutboxEvent {
     @Column(name = "retry_count")
     private Integer retryCount;
 
-    @Column(name = "request_id", nullable = false)
-    private UUID requestId;
+    @Column(name = "unique_order_number", nullable = false)
+    private String uniqueOrderNumber;
+
+    @Column(name = "order_id", nullable = false)
+    private Long orderId;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
