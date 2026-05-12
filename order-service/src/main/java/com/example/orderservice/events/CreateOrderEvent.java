@@ -21,7 +21,9 @@ public class CreateOrderEvent {
 
     private BigDecimal totalAmount;
 
-    private UUID uniqId;
+    private String uniqueOrderNumber;
+
+    private Long orderId;
 
     private OrderEventStatus status;
 

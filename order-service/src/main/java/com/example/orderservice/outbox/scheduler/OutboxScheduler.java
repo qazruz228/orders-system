@@ -5,11 +5,13 @@ import com.example.orderservice.events.OutboxEvent;
 import com.example.orderservice.outbox.service.OutboxProcessingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 
@@ -48,29 +50,33 @@ public class OutboxScheduler {
         }
 
         OutboxEvent event = events.get(index);
-        kafkaTemplate.send(
-                kafkaTopicProperties.getName(),
-                String.valueOf(event.getRequestId()), //НУЖЕН ДЛЯ ИДЕМПОТЕНТНОСТИ
-                event.getPayload()
-        ).whenComplete((result, throwable) -> {
-            try {
-                if (throwable == null) {
-                    outboxProcessingService.markSent(event.getId());
-                    log.debug("Outbox event id={} sent to topic={}", event.getId(), kafkaTopicProperties.getName());
-                } else {
-                    outboxProcessingService.handlePublishFailure(
-                            event.getId(),
-                            event.getRequestId(),
-                            event.getRetryCount(),
-                            maxRetry,
-                            throwable
-                    );
-                }
-            } catch (Exception callbackException) {
-                log.error("Outbox callback handling failed for event id={}", event.getId(), callbackException);
-            } finally {
-                publishSequentially(events, index + 1);
-            }
-        });
+        String uniqueOrderNumber = event.getUniqueOrderNumber();
+        String orderIdKey = String.valueOf(event.getOrderId());
+        ProducerRecord<String, String> record =
+                new ProducerRecord<>(kafkaTopicProperties.getName(), orderIdKey, event.getPayload());
+
+        record.headers().add("uniqueOrderNumber", uniqueOrderNumber.getBytes(StandardCharsets.UTF_8));
+
+        kafkaTemplate.send(record)
+                .whenComplete((result, throwable) -> {
+                    try {
+                        if (throwable == null) {
+                            outboxProcessingService.markSent(event.getId());
+                            log.debug("Outbox event id={} sent to topic={}", event.getId(), kafkaTopicProperties.getName());
+                        } else {
+                            outboxProcessingService.handlePublishFailure(
+                                    event.getId(),
+                                    event.getUniqueOrderNumber(),
+                                    event.getRetryCount(),
+                                    maxRetry,
+                                    throwable
+                            );
+                        }
+                    } catch (Exception callbackException) {
+                        log.error("Outbox callback handling failed for event id={}", event.getId(), callbackException);
+                    } finally {
+                        publishSequentially(events, index + 1);
+                    }
+                });
     }
 }
