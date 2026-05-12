@@ -1,3 +1,35 @@
 spring:
   application:
     name: payment-service
+
+  kafka:
+    bootstrap-servers: localhost:9092,localhost:9094,localhost:9096
+    consumer:
+      group-id: payment-service-group
+      client-id: payment-service-consumer
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        isolation.level: read_committed
+        allow.auto.create.topics: false
+    listener:
+      ack-mode: manual_immediate
+      concurrency: 3
+      missing-topics-fatal: false
+    admin:
+      properties:
+        request.timeout.ms: 10000
+
+app:
+  kafka:
+    topics:
+      payment-events:
+        name: payment-events
+        partitions: 3
+        replicas: 3
+        configs:
+          min.insync.replicas: 3
+          cleanup.policy: delete
+          retention.ms: 604800000
