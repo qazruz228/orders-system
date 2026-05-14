@@ -15,7 +15,7 @@ import java.util.UUID;
 @Data
 @Builder
 // РАЗОБРАТЬСЯ С APACHE AVRO
-public class CreateOrderEvent {
+public class OrderEvent {
 
     private String deliveryAddress;
 

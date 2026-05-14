@@ -1,4 +1,4 @@
-package com.example.orderservice.outbox.service;
+package com.example.orderservice.kafka.producer.outbox.service;
 
 import com.example.orderservice.events.OutboxEvent;
 import com.example.orderservice.events.enums.OutboxStatus;

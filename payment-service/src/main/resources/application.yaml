@@ -2,6 +2,17 @@ spring:
   application:
     name: payment-service
 
+
+
+#добавить сюда данные для базы данных
+
+
+
+
+
+
+
+
   kafka:
     bootstrap-servers: localhost:9092,localhost:9094,localhost:9096
     consumer:

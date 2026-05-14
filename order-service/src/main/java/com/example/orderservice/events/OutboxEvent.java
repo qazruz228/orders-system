@@ -1,5 +1,7 @@
 package com.example.orderservice.events;
 
+import com.example.orderservice.entity.enums.OrderEventStatus;
+import com.example.orderservice.entity.enums.converter.OrderStatusConverter;
 import com.example.orderservice.events.enums.OutboxStatus;
 import com.example.orderservice.events.enums.converter.OutboxStatusConverter;
 import jakarta.persistence.*;
@@ -32,6 +34,12 @@ public class OutboxEvent {
     @Convert(converter = OutboxStatusConverter.class)
     @Column(name = "outbox_status", nullable = false, length = 50)
     private OutboxStatus outboxStatus;
+
+
+    @Convert(converter = OrderStatusConverter.class)
+    @Column(name = "order_status", nullable = false, length = 50)
+    private OrderEventStatus orderStatus;
+
 
     @Column(name = "retry_count")
     private Integer retryCount;

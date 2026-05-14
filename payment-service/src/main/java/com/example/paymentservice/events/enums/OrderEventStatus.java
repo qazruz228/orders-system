@@ -1,4 +1,4 @@
-package com.example.orderservice.entity.enums;
+package com.example.paymentservice.events.enums;
 
 public enum OrderEventStatus {
     CREATED,

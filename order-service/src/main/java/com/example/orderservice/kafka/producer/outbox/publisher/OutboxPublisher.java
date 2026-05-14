@@ -1,6 +1,7 @@
-package com.example.orderservice.outbox.publisher;
+package com.example.orderservice.kafka.producer.outbox.publisher;
 
-import com.example.orderservice.events.CreateOrderEvent;
+import com.example.orderservice.entity.enums.OrderEventStatus;
+import com.example.orderservice.events.OrderEvent;
 import com.example.orderservice.events.OutboxEvent;
 import com.example.orderservice.events.enums.OutboxStatus;
 import com.example.orderservice.repository.OutboxEventRepository;
@@ -21,19 +22,20 @@ public class OutboxPublisher {
     private final JsonConverter jsonConverter;
 
     @Transactional
-    public void saveEvent(CreateOrderEvent createOrderEvent) {
-        if (createOrderEvent == null) {
-            throw new IllegalArgumentException("createOrderEvent must not be null");
+    public void saveEvent(OrderEvent orderEvent) {
+        if (orderEvent == null) {
+            throw new IllegalArgumentException("orderEvent must not be null");
         }
 
-        String payload = jsonConverter.toJson(createOrderEvent);
+        String payload = jsonConverter.toJson(orderEvent);
 
         OutboxEvent outboxEvent = OutboxEvent.builder()
                 .payload(payload)
-                .uniqueOrderNumber(createOrderEvent.getUniqueOrderNumber())
-                .orderId(createOrderEvent.getOrderId())
+                .uniqueOrderNumber(orderEvent.getUniqueOrderNumber())
+                .orderId(orderEvent.getOrderId())
                 .outboxStatus(OutboxStatus.NEW)
                 .retryCount(INITIAL_RETRY_COUNT)
+                .orderStatus(OrderEventStatus.CREATED)
                 .build();
 
         OutboxEvent savedEvent = outboxEventRepository.save(outboxEvent);

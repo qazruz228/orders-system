@@ -1,8 +1,9 @@
-package com.example.orderservice.outbox.scheduler;
+package com.example.orderservice.kafka.producer.outbox.scheduler;
 
 import com.example.orderservice.config.KafkaTopicProperties;
+import com.example.orderservice.entity.enums.OrderEventStatus;
 import com.example.orderservice.events.OutboxEvent;
-import com.example.orderservice.outbox.service.OutboxProcessingService;
+import com.example.orderservice.kafka.producer.outbox.service.OutboxProcessingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -50,12 +51,13 @@ public class OutboxScheduler {
         }
 
         OutboxEvent event = events.get(index);
-        String uniqueOrderNumber = event.getUniqueOrderNumber();
+        OrderEventStatus status = event.getOrderStatus();
+        String orderStatus = status.toString();
         String orderIdKey = String.valueOf(event.getOrderId());
         ProducerRecord<String, String> record =
                 new ProducerRecord<>(kafkaTopicProperties.getName(), orderIdKey, event.getPayload());
 
-        record.headers().add("uniqueOrderNumber", uniqueOrderNumber.getBytes(StandardCharsets.UTF_8));
+        record.headers().add("orderStatus", orderStatus.getBytes(StandardCharsets.UTF_8));
 
         kafkaTemplate.send(record)
                 .whenComplete((result, throwable) -> {

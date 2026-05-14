@@ -4,10 +4,11 @@ import com.example.orderservice.dto.CreateOrderRequest;
 import com.example.orderservice.dto.CreateOrderResponse;
 import com.example.orderservice.entity.Order;
 import com.example.orderservice.entity.Product;
-import com.example.orderservice.events.CreateOrderEvent;
+import com.example.orderservice.entity.enums.OrderEventStatus;
+import com.example.orderservice.events.OrderEvent;
 import com.example.orderservice.util.converter.OrderRequestConverterToEvent;
 import com.example.orderservice.mapper.OrderMapper;
-import com.example.orderservice.outbox.publisher.OutboxPublisher;
+import com.example.orderservice.kafka.producer.outbox.publisher.OutboxPublisher;
 import com.example.orderservice.repository.OrderRepository;
 import com.example.orderservice.util.validator.ProductValidator;
 import lombok.RequiredArgsConstructor;
@@ -45,10 +46,10 @@ public class OrderService {
         request.setTotalAmount(totalAmount);
 
         Order savedOrder = orderRepository.save(orderMapper.toOrder(request));
-        CreateOrderEvent createOrderEvent = requestConverter.convert(request);
-        createOrderEvent.setUniqueOrderNumber(uniqId);
-        createOrderEvent.setOrderId(savedOrder.getId());
-        outboxPublisher.saveEvent(createOrderEvent);
+        OrderEvent orderEvent = requestConverter.convert(request);
+        orderEvent.setUniqueOrderNumber(uniqId);
+        orderEvent.setOrderId(savedOrder.getId());
+        outboxPublisher.saveEvent(orderEvent);
 
         log.info("Created order id={} uniqId={} items={}", savedOrder.getId(), uniqId, request.getOrderItems().size());
 
