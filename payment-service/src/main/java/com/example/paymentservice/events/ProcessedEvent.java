@@ -1,4 +1,4 @@
-package com.example.paymentservice.entity;
+package com.example.paymentservice.events;
 
 import com.example.paymentservice.events.enums.OrderEventStatus;
 import jakarta.persistence.Column;
@@ -9,7 +9,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
@@ -26,6 +25,9 @@ public class ProcessedEvent {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
+    private String payload;
 
     @Column(name = "unique_order_number", nullable = false, length = 100)
     private String uniqueOrderNumber;

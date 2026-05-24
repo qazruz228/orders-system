@@ -16,7 +16,7 @@ public class ConverterEventToTransaction implements Converter<OrderEvent, Transa
         transaction.setDeliveryAddress(orderEvent.getDeliveryAddress());
         transaction.setTotalAmount(orderEvent.getTotalAmount());
         transaction.setUniqueOrderNumber(orderEvent.getUniqueOrderNumber());
-        transaction.setStatus(TransactionStatus.CREATED);
+        transaction.setStatus(TransactionStatus.PENDING);
         return transaction;
     }
 }

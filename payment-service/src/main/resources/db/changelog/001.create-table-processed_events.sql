@@ -4,6 +4,7 @@
 
 CREATE TABLE processed_events (
     id BIGSERIAL PRIMARY KEY,
+    payload TEXT NOT NULL,
     unique_order_number VARCHAR(100) NOT NULL,
     order_status VARCHAR(50) NOT NULL,
     created_at TIMESTAMP,

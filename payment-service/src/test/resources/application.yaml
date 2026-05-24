@@ -21,6 +21,8 @@ spring:
 
 app:
   kafka:
+    admin:
+      enabled: false
     topics:
       order-events:
         name: order-events
@@ -32,3 +34,6 @@ app:
           min.insync.replicas: 1
           cleanup.policy: delete
           retention.ms: 604800000
+
+outbox:
+  enabled: false

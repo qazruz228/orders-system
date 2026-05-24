@@ -1,7 +1,10 @@
 package com.example.paymentservice.service.handler;
 
+import com.example.paymentservice.events.enums.OrderEventStatus;
 import com.example.paymentservice.events.OrderEvent;
 
 public interface OrderHandler {
-    void process(OrderEvent orderEvent);
+    boolean supports(OrderEventStatus orderStatus);
+
+    void process(OrderEvent orderEvent, String payload);
 }
