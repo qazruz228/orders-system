@@ -4,6 +4,5 @@ import lombok.Data;
 
 @Data
 public class RemitPaymentRequest {
-    public String UniqueOrderNumber;
-
+    private String uniqueOrderNumber;
 }

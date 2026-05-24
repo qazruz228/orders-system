@@ -4,11 +4,17 @@ spring:
 
 
 
-#добавить сюда данные для базы данных
-
-
-
-
+  datasource:
+    url: jdbc:postgresql://localhost:5436/paymentsystemdb
+    username: paymentsystem
+    password: paymentsystem
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
 
 
 
@@ -36,6 +42,8 @@ spring:
 app:
   kafka:
     topics:
+      order-events:
+        name: order-events
       payment-events:
         name: payment-events
         partitions: 3

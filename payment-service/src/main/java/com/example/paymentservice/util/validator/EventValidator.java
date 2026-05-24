@@ -1,8 +1,6 @@
 package com.example.paymentservice.util.validator;
 
-import com.example.paymentservice.entity.ProcessedEvent;
 import com.example.paymentservice.events.OrderEvent;
-import com.example.paymentservice.repository.ProcessedEventsRepository;
 import com.example.paymentservice.util.converter.JsonConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -11,27 +9,19 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class EventValidator {
 
-
-    private final ProcessedEventsRepository processedEventsRepository;
     private final JsonConverter jsonConverter;
 
-
-    public OrderEvent validate(String value){
-
+    public OrderEvent validate(String value) {
         OrderEvent orderEvent = jsonConverter.fromJson(value, OrderEvent.class);
-
-        if (processedEventsRepository.existsByUniqueOrderNumber(orderEvent.getUniqueOrderNumber())){
-            return;
+        if (orderEvent.getOrderId() == null) {
+            throw new IllegalArgumentException("orderId must not be null");
         }
-
-        ProcessedEvent processedEvent = new ProcessedEvent();
-        processedEvent.setUniqueOrderNumber(orderEvent.getUniqueOrderNumber());
-        processedEventsRepository.save(processedEvent);
-
+        if (orderEvent.getUniqueOrderNumber() == null || orderEvent.getUniqueOrderNumber().isBlank()) {
+            throw new IllegalArgumentException("uniqueOrderNumber must not be blank");
+        }
+        if (orderEvent.getTotalAmount() == null) {
+            throw new IllegalArgumentException("totalAmount must not be null");
+        }
         return orderEvent;
-
-
     }
-
-
 }

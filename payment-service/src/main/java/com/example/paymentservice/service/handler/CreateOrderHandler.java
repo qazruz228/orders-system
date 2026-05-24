@@ -1,63 +1,43 @@
 package com.example.paymentservice.service.handler;
 
+import com.example.paymentservice.entity.ProcessedEvent;
 import com.example.paymentservice.entity.Transaction;
+import com.example.paymentservice.entity.enums.TransactionStatus;
 import com.example.paymentservice.events.OrderEvent;
-import com.example.paymentservice.events.enums.OrderEventStatus;
+import com.example.paymentservice.repository.ProcessedEventsRepository;
 import com.example.paymentservice.repository.TransactionRepository;
 import com.example.paymentservice.util.converter.ConverterEventToTransaction;
-import com.example.paymentservice.util.validator.EventValidator;
 import lombok.RequiredArgsConstructor;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class CreateOrderHandler implements OrderHandler {
 
-
-    private final EventValidator eventValidator;
     private final ConverterEventToTransaction converterEventToTransaction;
     private final TransactionRepository transactionRepository;
-    private final KafkaTemplate<?, ?> kafkaTemplate;
+    private final ProcessedEventsRepository processedEventsRepository;
 
     @Override
-    public void processCommand(ConsumerRecord<String, String> record){
+    public void process(OrderEvent orderEvent) {
 
-        String value = record.value();
-        String status = record.headers().lastHeader("OrderStatus");
-        OrderEvent orderEvent = eventValidator.validate(value);
-
-
-        if (status == OrderEventStatus.CREATED){
-            ProducerRecord<String, String> record;
-            kafkaTemplate.send(orderEvent.getOrderId(), )
-
+        if (processedEventsRepository.existsByUniqueOrderNumberAndOrderStatus(orderEvent.getUniqueOrderNumber(), orderEvent.getStatus())) {
+            return;
         }
 
+        ProcessedEvent processedEvent = new ProcessedEvent();
+        processedEvent.setUniqueOrderNumber(orderEvent.getUniqueOrderNumber());
+        processedEvent.setOrderStatus(orderEvent.getStatus());
+        processedEventsRepository.save(processedEvent);
+
+        if (transactionRepository.findByUniqueOrderNumber(orderEvent.getUniqueOrderNumber()).isPresent()) {
+            return;
+        }
+        Transaction transaction = converterEventToTransaction.convert(orderEvent);
+        transactionRepository.save(transaction);
+
+
+
     }
-
-
-    public void createTransaction(OrderEvent orderEvent){
-
-     Transaction transaction = converterEventToTransaction.convert(orderEvent);
-     transactionRepository.save(transaction);
-
-
-
-
-
-
-    }
-
-
-
-
-
-
-
-
-
 
 }

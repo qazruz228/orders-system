@@ -1,9 +1,7 @@
 package com.example.paymentservice.service.handler;
 
+import com.example.paymentservice.events.OrderEvent;
+
 public interface OrderHandler {
-
-
-
-
-    void processCommand(String s, String value);
+    void process(OrderEvent orderEvent);
 }
