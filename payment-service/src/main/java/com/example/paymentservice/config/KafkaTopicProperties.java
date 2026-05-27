@@ -26,7 +26,6 @@ public class KafkaTopicProperties {
     @NotEmpty
     private Map<String, String> configs = new HashMap<>();
 
-
     public Map<String, String> getConfigs() {
         return configs;
     }

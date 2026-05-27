@@ -1,4 +1,4 @@
-package com.example.paymentservice.config;
+package com.example.orderservice.config;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.TopicPartition;
@@ -41,19 +41,18 @@ public class KafkaConsumerConfig {
                 (ConsumerRecord<?, ?> record, Exception ex) ->
                         new TopicPartition(record.topic() + ".dlq", record.partition())
         );
+
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, new FixedBackOff(1_000L, 2L));
         errorHandler.addNotRetryableExceptions(IllegalArgumentException.class);
         errorHandler.setCommitRecovered(true);
         return errorHandler;
     }
 
-
     @Bean(name = "kafkaListenerContainerFactory")
     public ConcurrentKafkaListenerContainerFactory<Object, Object> kafkaListenerContainerFactory(
             ConcurrentKafkaListenerContainerFactoryConfigurer configurer,
             ConsumerFactory<Object, Object> consumerFactory,
-            DefaultErrorHandler kafkaErrorHandler
-           ) {
+            DefaultErrorHandler kafkaErrorHandler) {
 
         ConcurrentKafkaListenerContainerFactory<Object, Object> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();

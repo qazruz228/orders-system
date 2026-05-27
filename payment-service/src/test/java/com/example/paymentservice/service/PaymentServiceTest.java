@@ -1,7 +1,7 @@
 package com.example.paymentservice.service;
 
-import com.example.paymentservice.dto.RemitPaymentRequest;
-import com.example.paymentservice.dto.RemitPaymentResponse;
+import com.example.paymentservice.dto.PaymentRequest;
+import com.example.paymentservice.dto.PaymentResponse;
 import com.example.paymentservice.entity.Transaction;
 import com.example.paymentservice.entity.enums.TransactionStatus;
 import com.example.paymentservice.events.OrderEvent;
@@ -10,7 +10,7 @@ import com.example.paymentservice.events.enums.OrderEventStatus;
 import com.example.paymentservice.events.enums.PaymentStatus;
 import com.example.paymentservice.repository.TransactionRepository;
 import com.example.paymentservice.service.handler.OrderHandler;
-import com.example.paymentservice.service.handler.OrderHandlerRegistry;
+import com.example.paymentservice.config.OrderHandlerConfig;
 import com.example.paymentservice.kafka.producer.outbox.OutboxPublisher;
 import com.example.paymentservice.util.validator.EventValidator;
 import org.junit.jupiter.api.Test;
@@ -39,7 +39,7 @@ class PaymentServiceTest {
     private EventValidator eventValidator;
 
     @Mock
-    private OrderHandlerRegistry orderHandlerRegistry;
+    private OrderHandlerConfig orderHandlerConfig;
 
     @Mock
     private OrderHandler orderHandler;
@@ -61,7 +61,7 @@ class PaymentServiceTest {
                 .build();
 
         when(eventValidator.validate(payload, OrderEventStatus.CREATED)).thenReturn(orderEvent);
-        when(orderHandlerRegistry.getHandler(OrderEventStatus.CREATED)).thenReturn(orderHandler);
+        when(orderHandlerConfig.getHandler(OrderEventStatus.CREATED)).thenReturn(orderHandler);
 
         paymentService.processIncomingEvent(OrderEventStatus.CREATED, payload);
 
@@ -75,12 +75,12 @@ class PaymentServiceTest {
         transaction.setUniqueOrderNumber("order-25");
         transaction.setStatus(TransactionStatus.PENDING);
 
-        RemitPaymentRequest request = new RemitPaymentRequest();
+        PaymentRequest request = new PaymentRequest();
         request.setUniqueOrderNumber("order-25");
 
         when(transactionRepository.findByUniqueOrderNumberForUpdate("order-25")).thenReturn(Optional.of(transaction));
 
-        RemitPaymentResponse response = paymentService.remitPayment(request);
+        PaymentResponse response = paymentService.remitPayment(request);
 
         ArgumentCaptor<PaymentProcessedEvent> eventCaptor = ArgumentCaptor.forClass(PaymentProcessedEvent.class);
         verify(outboxPublisher).save(eventCaptor.capture());
@@ -100,12 +100,12 @@ class PaymentServiceTest {
         transaction.setUniqueOrderNumber("order-50");
         transaction.setStatus(TransactionStatus.COMPLETED);
 
-        RemitPaymentRequest request = new RemitPaymentRequest();
+        PaymentRequest request = new PaymentRequest();
         request.setUniqueOrderNumber("order-50");
 
         when(transactionRepository.findByUniqueOrderNumberForUpdate("order-50")).thenReturn(Optional.of(transaction));
 
-        RemitPaymentResponse response = paymentService.remitPayment(request);
+        PaymentResponse response = paymentService.remitPayment(request);
 
         verify(outboxPublisher, never()).save(org.mockito.ArgumentMatchers.any());
         verify(transactionRepository, never()).save(org.mockito.ArgumentMatchers.any());
@@ -118,7 +118,7 @@ class PaymentServiceTest {
         transaction.setUniqueOrderNumber("order-70");
         transaction.setStatus(TransactionStatus.CANCELLED);
 
-        RemitPaymentRequest request = new RemitPaymentRequest();
+        PaymentRequest request = new PaymentRequest();
         request.setUniqueOrderNumber("order-70");
 
         when(transactionRepository.findByUniqueOrderNumberForUpdate("order-70")).thenReturn(Optional.of(transaction));

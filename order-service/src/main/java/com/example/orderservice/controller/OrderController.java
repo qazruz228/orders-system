@@ -1,10 +1,12 @@
 package com.example.orderservice.controller;
 
+import com.example.orderservice.dto.CancelOrderRequest;
 import com.example.orderservice.dto.CreateOrderRequest;
 import com.example.orderservice.dto.CreateOrderResponse;
 import com.example.orderservice.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,6 +30,11 @@ public class OrderController {
 
     }
 
+    @PostMapping("/cancel")
+    public ResponseEntity<Void> cancelOrder(@RequestBody @Valid CancelOrderRequest request) {
+        orderService.cancelOrder(request.getUniqueOrderNumber());
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
 
 
 

@@ -15,4 +15,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT transaction FROM Transaction transaction WHERE transaction.uniqueOrderNumber = :uniqueOrderNumber")
     Optional<Transaction> findByUniqueOrderNumberForUpdate(@Param("uniqueOrderNumber") String uniqueOrderNumber);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT transaction FROM Transaction transaction WHERE transaction.orderId = :orderId")
+    Optional<Transaction> findByOrderIdForUpdate(@Param("orderId") Long orderId);
 }

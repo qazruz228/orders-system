@@ -57,6 +57,21 @@ app:
           min.insync.replicas: 3
           cleanup.policy: delete
           retention.ms: 604800000
+      payment-events:
+        name: payment-events
+        partitions: 3
+        replicas: 3
+        configs:
+          min.insync.replicas: 3
+          cleanup.policy: delete
+          retention.ms: 604800000
+
+outbox:
+  polling:
+    interval: 30000
+  batch-size: 5
+  max-retry: 5
+  processing-timeout: PT2M
 
 
 

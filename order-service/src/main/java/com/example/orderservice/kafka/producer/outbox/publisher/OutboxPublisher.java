@@ -1,6 +1,5 @@
 package com.example.orderservice.kafka.producer.outbox.publisher;
 
-import com.example.orderservice.entity.enums.OrderEventStatus;
 import com.example.orderservice.events.OrderEvent;
 import com.example.orderservice.events.OutboxEvent;
 import com.example.orderservice.events.enums.OutboxStatus;
@@ -35,7 +34,7 @@ public class OutboxPublisher {
                 .orderId(orderEvent.getOrderId())
                 .outboxStatus(OutboxStatus.NEW)
                 .retryCount(INITIAL_RETRY_COUNT)
-                .orderStatus(OrderEventStatus.CREATED)
+                .orderStatus(orderEvent.getStatus())
                 .build();
 
         OutboxEvent savedEvent = outboxEventRepository.save(outboxEvent);

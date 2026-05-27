@@ -1,7 +1,7 @@
 package com.example.paymentservice.service;
 
-import com.example.paymentservice.dto.RemitPaymentRequest;
-import com.example.paymentservice.dto.RemitPaymentResponse;
+import com.example.paymentservice.dto.PaymentRequest;
+import com.example.paymentservice.dto.PaymentResponse;
 import com.example.paymentservice.entity.Transaction;
 import com.example.paymentservice.entity.enums.TransactionStatus;
 import com.example.paymentservice.events.OrderEvent;
@@ -10,7 +10,7 @@ import com.example.paymentservice.events.enums.OrderEventStatus;
 import com.example.paymentservice.events.enums.PaymentStatus;
 import com.example.paymentservice.repository.TransactionRepository;
 import com.example.paymentservice.service.handler.OrderHandler;
-import com.example.paymentservice.service.handler.OrderHandlerRegistry;
+import com.example.paymentservice.config.OrderHandlerConfig;
 import com.example.paymentservice.kafka.producer.outbox.OutboxPublisher;
 import com.example.paymentservice.util.validator.EventValidator;
 import lombok.RequiredArgsConstructor;
@@ -23,18 +23,18 @@ public class PaymentService {
 
     private final TransactionRepository transactionRepository;
     private final EventValidator eventValidator;
-    private final OrderHandlerRegistry orderHandlerRegistry;
+    private final OrderHandlerConfig orderHandlerConfig;
     private final OutboxPublisher outboxPublisher;
 
     @Transactional
     public void processIncomingEvent(OrderEventStatus orderStatus, String payload) {
         OrderEvent orderEvent = eventValidator.validate(payload, orderStatus);
-        OrderHandler orderHandler = orderHandlerRegistry.getHandler(orderStatus);
+        OrderHandler orderHandler = orderHandlerConfig.getHandler(orderStatus);
         orderHandler.process(orderEvent, payload);
     }
 
     @Transactional
-    public RemitPaymentResponse remitPayment(RemitPaymentRequest request) {
+    public PaymentResponse remitPayment(PaymentRequest request) {
         if (request == null || request.getUniqueOrderNumber() == null || request.getUniqueOrderNumber().isBlank()) {
             throw new IllegalArgumentException("uniqueOrderNumber must not be blank");
         }
@@ -62,6 +62,25 @@ public class PaymentService {
         return buildResponse("Transaction successfully processed");
     }
 
+
+
+    public PaymentResponse cancelPayment(PaymentRequest request){
+
+        return null;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
     private Transaction getTransactionForUpdate(String uniqueOrderNumber) {
         return transactionRepository.findByUniqueOrderNumberForUpdate(uniqueOrderNumber)
                 .orElseThrow(() -> new IllegalArgumentException(
@@ -69,8 +88,8 @@ public class PaymentService {
                 ));
     }
 
-    private RemitPaymentResponse buildResponse(String message) {
-        RemitPaymentResponse response = new RemitPaymentResponse();
+    private PaymentResponse buildResponse(String message) {
+        PaymentResponse response = new PaymentResponse();
         response.setMessage(message);
         return response;
     }

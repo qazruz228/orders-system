@@ -26,6 +26,12 @@ app:
     topics:
       order-events:
         name: order-events
+        partitions: 1
+        replicas: 1
+        configs:
+          min.insync.replicas: 1
+          cleanup.policy: delete
+          retention.ms: 604800000
       payment-events:
         name: payment-events
         partitions: 1

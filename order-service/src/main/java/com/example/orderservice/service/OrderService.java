@@ -41,22 +41,55 @@ public class OrderService {
     public CreateOrderResponse createOrder(CreateOrderRequest request) {
         Map<Long, Product> productsById = productValidator.validateCreateOrderRequest(request);
         BigDecimal totalAmount = productService.updateProductQuantitiesAndCalculateTotal(request, productsById);
-        String uniqId = UUID.randomUUID().toString();
+        String uniqOrderNumber = UUID.randomUUID().toString();
 
         request.setTotalAmount(totalAmount);
 
-        Order savedOrder = orderRepository.save(orderMapper.toOrder(request));
+        Order order = orderMapper.toOrder(request);
+        order.setUniqueOrderNumber(uniqOrderNumber);
+        order.setStatus(OrderEventStatus.CREATED);
+        Order savedOrder = orderRepository.save(order);
         OrderEvent orderEvent = requestConverter.convert(request);
-        orderEvent.setUniqueOrderNumber(uniqId);
+        orderEvent.setUniqueOrderNumber(uniqOrderNumber);
         orderEvent.setOrderId(savedOrder.getId());
         outboxPublisher.saveEvent(orderEvent);
 
-        log.info("Created order id={} uniqId={} items={}", savedOrder.getId(), uniqId, request.getOrderItems().size());
+        log.info("Created order id={} uniqOrderNumber={} items={}", savedOrder.getId(), uniqOrderNumber, request.getOrderItems().size());
 
         return CreateOrderResponse.builder()
                 .message(ORDER_CREATED_MESSAGE)
-                .uniqueOrderNumber(uniqId)
+                .uniqueOrderNumber(uniqOrderNumber)
                 .build();
+    }
+
+    @Transactional
+    public void cancelOrder(String uniqueOrderNumber) {
+        if (uniqueOrderNumber == null || uniqueOrderNumber.isBlank()) {
+            throw new IllegalArgumentException("uniqueOrderNumber must not be blank");
+        }
+
+        Order order = orderRepository.findByUniqueOrderNumberForUpdate(uniqueOrderNumber)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Order not found for uniqueOrderNumber=" + uniqueOrderNumber
+                ));
+
+        if (order.getStatus() == OrderEventStatus.CANCELLED) {
+            return;
+        }
+        if (order.getStatus() == OrderEventStatus.COMPLETED) {
+            throw new IllegalStateException("Completed order cannot be cancelled");
+        }
+
+
+        OrderEvent orderEvent = OrderEvent.builder()
+                .orderId(order.getId())
+                .uniqueOrderNumber(order.getUniqueOrderNumber())
+                .deliveryAddress(order.getDeliveryAddress())
+                .totalAmount(order.getTotalAmount())
+                .status(OrderEventStatus.CANCELLED)
+                .build();
+
+        outboxPublisher.saveEvent(orderEvent);
     }
 
 }

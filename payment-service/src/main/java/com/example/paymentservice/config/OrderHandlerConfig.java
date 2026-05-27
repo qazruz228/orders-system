@@ -1,6 +1,7 @@
-package com.example.paymentservice.service.handler;
+package com.example.paymentservice.config;
 
 import com.example.paymentservice.events.enums.OrderEventStatus;
+import com.example.paymentservice.service.handler.OrderHandler;
 import org.springframework.stereotype.Component;
 
 import java.util.EnumMap;
@@ -8,11 +9,11 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class OrderHandlerRegistry {
+public class OrderHandlerConfig {
 
     private final Map<OrderEventStatus, OrderHandler> handlersByStatus;
 
-    public OrderHandlerRegistry(List<OrderHandler> handlers) {
+    public OrderHandlerConfig(List<OrderHandler> handlers) {
         this.handlersByStatus = new EnumMap<>(OrderEventStatus.class);
 
         for (OrderHandler handler : handlers) {

@@ -1,7 +1,7 @@
 package com.example.paymentservice.controller;
 
-import com.example.paymentservice.dto.RemitPaymentRequest;
-import com.example.paymentservice.dto.RemitPaymentResponse;
+import com.example.paymentservice.dto.PaymentRequest;
+import com.example.paymentservice.dto.PaymentResponse;
 import com.example.paymentservice.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +18,8 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping("/remit")
-    public ResponseEntity<RemitPaymentResponse> remitPayment(@RequestBody RemitPaymentRequest request) {
-        RemitPaymentResponse response = paymentService.remitPayment(request);
+    public ResponseEntity<PaymentResponse> remitPayment(@RequestBody PaymentRequest request) {
+        PaymentResponse response = paymentService.remitPayment(request);
         return ResponseEntity.ok(response);
     }
 }

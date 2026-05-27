@@ -1,27 +1,59 @@
 package com.example.orderservice.config;
 
 import org.apache.kafka.clients.admin.NewTopic;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
 
+import java.util.Map;
+
 @Configuration
 @EnableConfigurationProperties(KafkaTopicProperties.class)
 public class KafkaTopicConfig {
 
-    private final KafkaTopicProperties topicProperties;
+    private final KafkaTopicProperties orderTopicProperties;
+    @Value("${app.kafka.topics.payment-events.name}")
+    private String paymentTopicName;
+    @Value("${app.kafka.topics.payment-events.partitions}")
+    private int paymentTopicPartitions;
+    @Value("${app.kafka.topics.payment-events.replicas}")
+    private int paymentTopicReplicas;
+    private final Map<String, String> paymentTopicConfigs;
 
-    public KafkaTopicConfig(KafkaTopicProperties topicProperties) {
-        this.topicProperties = topicProperties;
+    public KafkaTopicConfig(
+            KafkaTopicProperties orderTopicProperties,
+            @Value("#{${app.kafka.topics.payment-events.configs}}") Map<String, String> paymentTopicConfigs
+    ) {
+        this.orderTopicProperties = orderTopicProperties;
+        this.paymentTopicConfigs = paymentTopicConfigs;
     }
 
     @Bean
     public NewTopic orderEventTopic() {
-        return TopicBuilder.name(topicProperties.getName())
-                .partitions(topicProperties.getPartitions())
-                .replicas(topicProperties.getReplicas())
-                .configs(topicProperties.getConfigs())
+        return TopicBuilder.name(orderTopicProperties.getName())
+                .partitions(orderTopicProperties.getPartitions())
+                .replicas(orderTopicProperties.getReplicas())
+                .configs(orderTopicProperties.getConfigs())
+                .build();
+    }
+
+    @Bean
+    public NewTopic paymentEventTopic() {
+        return TopicBuilder.name(paymentTopicName)
+                .partitions(paymentTopicPartitions)
+                .replicas(paymentTopicReplicas)
+                .configs(paymentTopicConfigs)
+                .build();
+    }
+
+    @Bean
+    public NewTopic paymentEventDlqTopic() {
+        return TopicBuilder.name(paymentTopicName + ".dlq")
+                .partitions(paymentTopicPartitions)
+                .replicas(paymentTopicReplicas)
+                .configs(paymentTopicConfigs)
                 .build();
     }
 }
