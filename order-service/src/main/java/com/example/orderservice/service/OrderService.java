@@ -62,34 +62,6 @@ public class OrderService {
                 .build();
     }
 
-    @Transactional
-    public void cancelOrder(String uniqueOrderNumber) {
-        if (uniqueOrderNumber == null || uniqueOrderNumber.isBlank()) {
-            throw new IllegalArgumentException("uniqueOrderNumber must not be blank");
-        }
 
-        Order order = orderRepository.findByUniqueOrderNumberForUpdate(uniqueOrderNumber)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Order not found for uniqueOrderNumber=" + uniqueOrderNumber
-                ));
-
-        if (order.getStatus() == OrderEventStatus.CANCELLED) {
-            return;
-        }
-        if (order.getStatus() == OrderEventStatus.COMPLETED) {
-            throw new IllegalStateException("Completed order cannot be cancelled");
-        }
-
-
-        OrderEvent orderEvent = OrderEvent.builder()
-                .orderId(order.getId())
-                .uniqueOrderNumber(order.getUniqueOrderNumber())
-                .deliveryAddress(order.getDeliveryAddress())
-                .totalAmount(order.getTotalAmount())
-                .status(OrderEventStatus.CANCELLED)
-                .build();
-
-        outboxPublisher.saveEvent(orderEvent);
-    }
 
 }

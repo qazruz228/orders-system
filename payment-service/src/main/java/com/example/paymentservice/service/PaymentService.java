@@ -43,7 +43,7 @@ public class PaymentService {
         if (transaction.getStatus() == TransactionStatus.COMPLETED) {
             return buildResponse("Transaction already processed");
         }
-        if (transaction.getStatus() != TransactionStatus.PENDING) {
+        if (transaction.getStatus() != TransactionStatus.CANCELLED) {
             throw new IllegalStateException(
                     "Transaction cannot be remitted from status " + transaction.getStatus()
             );
@@ -62,24 +62,31 @@ public class PaymentService {
         return buildResponse("Transaction successfully processed");
     }
 
-
-
     public PaymentResponse cancelPayment(PaymentRequest request){
 
-        return null;
+        if (request == null || request.getUniqueOrderNumber() == null || request.getUniqueOrderNumber().isBlank()) {
+            throw new IllegalArgumentException("uniqueOrderNumber must not be blank");
+        }
+        Transaction transaction = getTransactionForUpdate(request.getUniqueOrderNumber());
+
+        if (transaction.getStatus() == TransactionStatus.CANCELLED) {
+            return buildResponse("Transaction already cancelled");
+        }
+        if (transaction.getStatus() != TransactionStatus.COMPLETED) {
+            throw new IllegalStateException("Transaction already processed ");
+        }
+        PaymentProcessedEvent paymentProcessedEvent = PaymentProcessedEvent.builder()
+                .orderId(transaction.getOrderId())
+                .uniqueOrderNumber(transaction.getUniqueOrderNumber())
+                .paymentStatus(PaymentStatus.CANCELLED)
+                .build();
+
+        outboxPublisher.save(paymentProcessedEvent);
+        transaction.setStatus(TransactionStatus.CANCELLED);
+        transactionRepository.save(transaction);
+
+        return buildResponse("Transaction successfully cancelled");
     }
-
-
-
-
-
-
-
-
-
-
-
-
 
     private Transaction getTransactionForUpdate(String uniqueOrderNumber) {
         return transactionRepository.findByUniqueOrderNumberForUpdate(uniqueOrderNumber)
@@ -94,3 +101,6 @@ public class PaymentService {
         return response;
     }
 }
+
+
+//следующая запись по поводу методов контроллера и отправку результата в order-service

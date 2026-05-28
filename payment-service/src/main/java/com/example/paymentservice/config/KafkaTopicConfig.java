@@ -25,8 +25,7 @@ public class KafkaTopicConfig {
     private final Map<String, String> orderTopicConfigs;
 
     public KafkaTopicConfig(
-            KafkaTopicProperties paymentTopicProperties,
-            @Value("#{${app.kafka.topics.order-events.configs}}") Map<String, String> orderTopicConfigs
+            KafkaTopicProperties paymentTopicProperties, Map<String, String> orderTopicConfigs
     ) {
         this.paymentTopicProperties = paymentTopicProperties;
         this.orderTopicConfigs = orderTopicConfigs;
