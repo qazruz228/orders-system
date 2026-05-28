@@ -1,5 +1,6 @@
 package com.example.orderservice.kafka.consumer;
 
+import com.example.orderservice.config.PaymentHandlerConfig;
 import com.example.orderservice.events.PaymentProcessedEvent;
 import com.example.orderservice.service.handler.PaymentHandler;
 import com.example.orderservice.util.converter.JsonConverter;
@@ -14,8 +15,7 @@ import org.springframework.stereotype.Component;
 public class PaymentEventConsumer {
 
     private final JsonConverter jsonConverter;
-    private final OrderStatusService orderStatusService;
-
+    private final PaymentHandlerConfig paymentHandlerConfig;
     @KafkaListener(
             topics = "${app.kafka.topics.payment-events.name}",
             groupId = "${spring.kafka.consumer.group-id}",
@@ -23,7 +23,7 @@ public class PaymentEventConsumer {
     )
     public void consumePaymentEvent(ConsumerRecord<String, String> record, Acknowledgment acknowledgment) {
         PaymentProcessedEvent paymentEvent = jsonConverter.fromJson(record.value(), PaymentProcessedEvent.class);
-        PaymentHandler paymentHandler = paymentHandler.process(paymentEvent);
+        PaymentHandler paymentHandler = paymentHandlerConfig.getHandler(paymentEvent.getPaymentStatus());
         paymentHandler.process(paymentEvent);
         acknowledgment.acknowledge();
     }
