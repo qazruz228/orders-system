@@ -88,7 +88,7 @@ public class PaymentService {
         if (transaction.getStatus() == TransactionStatus.CANCELLED) {
             return buildResponse("Transaction already cancelled");
         }
-        if (transaction.getStatus() != TransactionStatus.COMPLETED) {
+        if (transaction.getStatus() == TransactionStatus.COMPLETED) {
             throw new IllegalStateException("Transaction already processed ");
         }
         PaymentProcessedEvent paymentProcessedEvent = PaymentProcessedEvent.builder()
