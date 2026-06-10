@@ -1,6 +1,6 @@
 services:
 
-  postgres:
+  postgres-order:
     image: postgres:alpine
     container_name: postgres-order-system
     environment:
@@ -10,9 +10,24 @@ services:
     ports:
       - "5435:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql
+      - postgres_order_data:/var/lib/postgresql
     networks:
       - ordersystem
+
+  postgres-payment:
+    image: postgres:alpine
+    container_name: postgres-payment-system
+    environment:
+      POSTGRES_USER: paymentsystem
+      POSTGRES_PASSWORD: paymentsystem
+      POSTGRES_DB: paymentsystemdb
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres_payment_data:/var/lib/postgresql
+    networks:
+      - ordersystem
+
 
 
   kafka-1:
@@ -81,8 +96,28 @@ services:
       - ordersystem
 
 
+
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8081:8080"
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-1:9092,kafka-2:9092,kafka-3:9092
+      DYNAMIC_CONFIG_ENABLED: "true"
+    networks:
+      - ordersystem
+
+
 volumes:
-  postgres_data:
+  postgres_order_data:
+  postgres_payment_data:
   kafka1_data:
   kafka2_data:
   kafka3_data:

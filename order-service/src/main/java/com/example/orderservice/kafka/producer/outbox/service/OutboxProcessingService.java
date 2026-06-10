@@ -1,4 +1,4 @@
-package com.example.orderservice.outbox.service;
+package com.example.orderservice.kafka.producer.outbox.service;
 
 import com.example.orderservice.events.OutboxEvent;
 import com.example.orderservice.events.enums.OutboxStatus;
@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @Slf4j
@@ -43,7 +42,9 @@ public class OutboxProcessingService {
     }
 
     @Transactional
-    public void handlePublishFailure(Long eventId, UUID requestId, Integer currentRetryCount, int maxRetry, Throwable throwable) {
+    public void handlePublishFailure(Long eventId, String uniqueOrderNumber,
+                                     Integer currentRetryCount, int maxRetry,
+                                     Throwable throwable) {
         LocalDateTime now = LocalDateTime.now();
         int updated = outboxEventRepository.recordPublishFailure(
                 eventId,
@@ -59,9 +60,9 @@ public class OutboxProcessingService {
         int nextRetry = (currentRetryCount == null ? 0 : currentRetryCount) + 1;
 
         log.warn(
-                "Failed to publish outbox event id={} requestId={} retry={} nextStatus={}",
+                "Failed to publish outbox event id={} uniqueOrderNumber={} retry={} nextStatus={}",
                 eventId,
-                requestId,
+                uniqueOrderNumber,
                 nextRetry,
                 nextRetry >= maxRetry ? OutboxStatus.FAILED : OutboxStatus.NEW,
                 throwable

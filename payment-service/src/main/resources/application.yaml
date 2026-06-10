@@ -1,0 +1,83 @@
+spring:
+  application:
+    name: payment-service
+
+
+
+  datasource:
+    url: jdbc:postgresql://localhost:5436/paymentsystemdb
+    username: paymentsystem
+    password: paymentsystem
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+
+
+
+  kafka:
+    bootstrap-servers: localhost:9092,localhost:9094,localhost:9096
+    producer:
+      client-id: payment-service-producer
+      acks: all
+      retries: 5
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+        compression.type: snappy
+        batch.size: 32768
+        linger.ms: 20
+        delivery.timeout.ms: 120000
+        request.timeout.ms: 30000
+    consumer:
+      group-id: payment-service-group
+      client-id: payment-service-consumer
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        isolation.level: read_committed
+        allow.auto.create.topics: false
+    listener:
+      ack-mode: manual_immediate
+      concurrency: 3
+      missing-topics-fatal: false
+    admin:
+      properties:
+        request.timeout.ms: 10000
+
+app:
+  kafka:
+    admin:
+      enabled: true
+    topics:
+      order-events:
+        name: order-events
+        partitions: 3
+        replicas: 3
+        configs:
+          min.insync.replicas: 3
+          cleanup.policy: delete
+          retention.ms: 604800000
+      payment-events:
+        name: payment-events
+        partitions: 3
+        replicas: 3
+        configs:
+          min.insync.replicas: 3
+          cleanup.policy: delete
+          retention.ms: 604800000
+
+outbox:
+  polling:
+    interval: 30000
+  batch-size: 5
+  max-retry: 5
+  processing-timeout: PT2M

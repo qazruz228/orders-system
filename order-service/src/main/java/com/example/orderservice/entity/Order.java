@@ -1,5 +1,8 @@
 package com.example.orderservice.entity;
 
+import com.example.orderservice.entity.enums.OrderEventStatus;
+import com.example.orderservice.entity.enums.converter.OrderStatusConverter;
+import com.example.orderservice.events.enums.PaymentStatus;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -14,6 +17,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
 @Table(name = "orders")
@@ -34,6 +38,13 @@ public class Order {
     @Column(name = "delivery_address", columnDefinition = "TEXT")
     private String deliveryAddress;
 
+    @Column(name = "unique_order_number", length = 100, unique = true)
+    private String uniqueOrderNumber;
+
+    @Convert(converter = OrderStatusConverter.class)
+    @Column(name = "status", nullable = false, length = 50)
+    private OrderEventStatus status;
+
     @Version
     private Long version;
 
@@ -41,7 +52,13 @@ public class Order {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<OrderItem> items = new ArrayList<>();
+
+
 }

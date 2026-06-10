@@ -15,13 +15,15 @@ import java.util.UUID;
 @Data
 @Builder
 // РАЗОБРАТЬСЯ С APACHE AVRO
-public class CreateOrderEvent {
+public class OrderEvent {
 
     private String deliveryAddress;
 
     private BigDecimal totalAmount;
 
-    private UUID uniqId;
+    private String uniqueOrderNumber;
+
+    private Long orderId;
 
     private OrderEventStatus status;
 

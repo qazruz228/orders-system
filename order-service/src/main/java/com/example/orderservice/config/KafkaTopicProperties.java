@@ -7,7 +7,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Validated
@@ -21,7 +20,7 @@ public class KafkaTopicProperties {
     private int partitions;
 
     @Min(1)
-    private short replicas;
+    private int replicas;
 
     @NotEmpty
     private Map<String, String> configs = new HashMap<>();
@@ -42,7 +41,7 @@ public class KafkaTopicProperties {
         this.partitions = partitions;
     }
 
-    public short getReplicas() {
+    public int getReplicas() {
         return replicas;
     }
 

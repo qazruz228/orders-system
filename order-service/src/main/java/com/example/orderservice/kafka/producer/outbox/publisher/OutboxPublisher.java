@@ -1,6 +1,6 @@
-package com.example.orderservice.outbox.publisher;
+package com.example.orderservice.kafka.producer.outbox.publisher;
 
-import com.example.orderservice.events.CreateOrderEvent;
+import com.example.orderservice.events.OrderEvent;
 import com.example.orderservice.events.OutboxEvent;
 import com.example.orderservice.events.enums.OutboxStatus;
 import com.example.orderservice.repository.OutboxEventRepository;
@@ -9,8 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service
 @Slf4j
@@ -23,21 +21,31 @@ public class OutboxPublisher {
     private final JsonConverter jsonConverter;
 
     @Transactional
-    public void saveEvent(CreateOrderEvent createOrderEvent) {
-        if (createOrderEvent == null) {
-            throw new IllegalArgumentException("createOrderEvent must not be null");
+    public void saveEvent(OrderEvent orderEvent) {
+        if (orderEvent == null) {
+            throw new IllegalArgumentException("orderEvent must not be null");
         }
 
-        String payload = jsonConverter.toJson(createOrderEvent);
+        String payload = jsonConverter.toJson(orderEvent);
 
         OutboxEvent outboxEvent = OutboxEvent.builder()
                 .payload(payload)
+                .uniqueOrderNumber(orderEvent.getUniqueOrderNumber())
+                .orderId(orderEvent.getOrderId())
                 .outboxStatus(OutboxStatus.NEW)
                 .retryCount(INITIAL_RETRY_COUNT)
-                .requestId(UUID.randomUUID())
+                .orderStatus(orderEvent.getStatus())
                 .build();
 
         OutboxEvent savedEvent = outboxEventRepository.save(outboxEvent);
-        log.debug("Saved outbox event with id={} and status={}", savedEvent.getId(), savedEvent.getOutboxStatus());
+        log.info(
+                "Order outbox saved eventId={} orderId={} uniqueOrderNumber={} orderStatus={} outboxStatus={} payloadBytes={}",
+                savedEvent.getId(),
+                savedEvent.getOrderId(),
+                savedEvent.getUniqueOrderNumber(),
+                savedEvent.getOrderStatus(),
+                savedEvent.getOutboxStatus(),
+                payload.length()
+        );
     }
 }

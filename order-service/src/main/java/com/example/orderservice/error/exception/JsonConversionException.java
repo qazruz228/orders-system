@@ -5,3 +5,4 @@ public class JsonConversionException extends RuntimeException {
         super(message, cause);
     }
 }
+

@@ -1,6 +1,7 @@
 package com.example.orderservice.entity.enums;
 
 public enum OrderEventStatus {
+    CREATED,
     PENDING,
     CANCELLED,
     COMPLETED;

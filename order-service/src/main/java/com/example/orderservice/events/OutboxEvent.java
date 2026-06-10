@@ -1,11 +1,12 @@
 package com.example.orderservice.events;
 
+import com.example.orderservice.entity.enums.OrderEventStatus;
+import com.example.orderservice.entity.enums.converter.OrderStatusConverter;
 import com.example.orderservice.events.enums.OutboxStatus;
 import com.example.orderservice.events.enums.converter.OutboxStatusConverter;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,11 +35,20 @@ public class OutboxEvent {
     @Column(name = "outbox_status", nullable = false, length = 50)
     private OutboxStatus outboxStatus;
 
+
+    @Convert(converter = OrderStatusConverter.class)
+    @Column(name = "order_status", nullable = false, length = 50)
+    private OrderEventStatus orderStatus;
+
+
     @Column(name = "retry_count")
     private Integer retryCount;
 
-    @Column(name = "request_id", nullable = false)
-    private UUID requestId;
+    @Column(name = "unique_order_number", nullable = false)
+    private String uniqueOrderNumber;
+
+    @Column(name = "order_id", nullable = false)
+    private Long orderId;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

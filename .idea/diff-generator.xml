@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DiffGenerationConfig">
-    <option name="sourceModelValue" value="order-service:order-service" />
-    <option name="targetDbValue" value="e138d9ee-224d-43f4-8ec2-1dfbc40851b4" />
+    <option name="sourceModelValue" value="payment-service:payment-service" />
+    <option name="targetDbValue" value="7aefaf42-4bf0-4737-a0df-44757ce2af99" />
   </component>
 </project>

@@ -4,10 +4,11 @@ import com.example.orderservice.dto.CreateOrderRequest;
 import com.example.orderservice.dto.CreateOrderResponse;
 import com.example.orderservice.entity.Order;
 import com.example.orderservice.entity.Product;
-import com.example.orderservice.events.CreateOrderEvent;
+import com.example.orderservice.entity.enums.OrderEventStatus;
+import com.example.orderservice.events.OrderEvent;
 import com.example.orderservice.util.converter.OrderRequestConverterToEvent;
 import com.example.orderservice.mapper.OrderMapper;
-import com.example.orderservice.outbox.publisher.OutboxPublisher;
+import com.example.orderservice.kafka.producer.outbox.publisher.OutboxPublisher;
 import com.example.orderservice.repository.OrderRepository;
 import com.example.orderservice.util.validator.ProductValidator;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class OrderService {
 
     private static final String ORDER_CREATED_MESSAGE =
             "Your order has been accepted, " +
-             "remember your uniqId because it need you for payment, " +
+             "remember your unique_order_number because it need you for payment, " +
              "move to payment-service for payment";
 
     private final ProductService productService;
@@ -40,21 +41,27 @@ public class OrderService {
     public CreateOrderResponse createOrder(CreateOrderRequest request) {
         Map<Long, Product> productsById = productValidator.validateCreateOrderRequest(request);
         BigDecimal totalAmount = productService.updateProductQuantitiesAndCalculateTotal(request, productsById);
-        UUID uniqId = UUID.randomUUID();
+        String uniqOrderNumber = UUID.randomUUID().toString();
 
         request.setTotalAmount(totalAmount);
 
-        Order savedOrder = orderRepository.save(orderMapper.toOrder(request));
-        CreateOrderEvent createOrderEvent = requestConverter.convert(request);
-        createOrderEvent.setUniqId(uniqId);
-        outboxPublisher.saveEvent(createOrderEvent);
+        Order order = orderMapper.toOrder(request);
+        order.setUniqueOrderNumber(uniqOrderNumber);
+        order.setStatus(OrderEventStatus.CREATED);
+        Order savedOrder = orderRepository.save(order);
+        OrderEvent orderEvent = requestConverter.convert(request);
+        orderEvent.setUniqueOrderNumber(uniqOrderNumber);
+        orderEvent.setOrderId(savedOrder.getId());
+        outboxPublisher.saveEvent(orderEvent);
 
-        log.info("Created order id={} uniqId={} items={}", savedOrder.getId(), uniqId, request.getOrderItems().size());
+        log.info("Created order id={} uniqOrderNumber={} items={}", savedOrder.getId(), uniqOrderNumber, request.getOrderItems().size());
 
         return CreateOrderResponse.builder()
                 .message(ORDER_CREATED_MESSAGE)
-                .uniqId(uniqId)
+                .uniqueOrderNumber(uniqOrderNumber)
                 .build();
     }
+
+
 
 }
