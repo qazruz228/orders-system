@@ -9,9 +9,11 @@ import com.example.paymentservice.repository.ProcessedEventsRepository;
 import com.example.paymentservice.repository.TransactionRepository;
 import com.example.paymentservice.util.converter.ConverterEventToTransaction;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class CreateOrderHandler implements OrderHandler {
 
@@ -28,6 +30,11 @@ public class CreateOrderHandler implements OrderHandler {
     public void process(OrderEvent orderEvent, String payload) {
 
         if (processedEventsRepository.existsByUniqueOrderNumberAndOrderStatus(orderEvent.getUniqueOrderNumber(), orderEvent.getStatus())) {
+            log.info(
+                    "Order event already processed uniqueOrderNumber={} orderStatus={}",
+                    orderEvent.getUniqueOrderNumber(),
+                    orderEvent.getStatus()
+            );
             return;
         }
 
@@ -38,12 +45,24 @@ public class CreateOrderHandler implements OrderHandler {
         processedEventsRepository.save(processedEvent);
 
         if (transactionRepository.findByUniqueOrderNumber(orderEvent.getUniqueOrderNumber()).isPresent()) {
+            log.info(
+                    "Transaction already exists orderId={} uniqueOrderNumber={}",
+                    orderEvent.getOrderId(),
+                    orderEvent.getUniqueOrderNumber()
+            );
             return;
         }
 
         Transaction transaction = converterEventToTransaction.convert(orderEvent);
         transaction.setStatus(TransactionStatus.PENDING);
-        transactionRepository.save(transaction);
+        Transaction savedTransaction = transactionRepository.save(transaction);
+        log.info(
+                "Transaction created transactionId={} orderId={} uniqueOrderNumber={} transactionStatus={}",
+                savedTransaction.getId(),
+                savedTransaction.getOrderId(),
+                savedTransaction.getUniqueOrderNumber(),
+                savedTransaction.getStatus()
+        );
     }
 
 }

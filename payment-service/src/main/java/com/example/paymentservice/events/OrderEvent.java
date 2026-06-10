@@ -1,14 +1,16 @@
 package com.example.paymentservice.events;
 
 import com.example.paymentservice.events.enums.OrderEventStatus;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-@Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 public class OrderEvent {
 
     private String deliveryAddress;

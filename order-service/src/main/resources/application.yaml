@@ -2,6 +2,7 @@ spring:
   application:
     name: order-service
 
+
   datasource:
     url: jdbc:postgresql://localhost:5435/ordersystemdb
     username: ordersystem
@@ -38,13 +39,19 @@ spring:
 
     consumer:
       group-id: order-service-group
+      client-id: order-service-consumer
       auto-offset-reset: earliest
       enable-auto-commit: false
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        isolation.level: read_committed
+        allow.auto.create.topics: false
 
     listener:
-      ack-mode: manual
+      ack-mode: manual_immediate
+      concurrency: 3
+      missing-topics-fatal: false
 
 app:
   kafka:
@@ -102,5 +109,7 @@ outbox:
 #      org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 #      org.springframework.security: DEBUG
 #      org.keycloak: DEBUG
-
+#
+server:
+  port: 8091
 

@@ -20,14 +20,15 @@ public class KafkaTopicConfig {
     private int paymentTopicPartitions;
     @Value("${app.kafka.topics.payment-events.replicas}")
     private int paymentTopicReplicas;
-    private final Map<String, String> paymentTopicConfigs;
+    @Value("${app.kafka.topics.payment-events.configs.min.insync.replicas}")
+    private String paymentTopicMinInsyncReplicas;
+    @Value("${app.kafka.topics.payment-events.configs.cleanup.policy}")
+    private String paymentTopicCleanupPolicy;
+    @Value("${app.kafka.topics.payment-events.configs.retention.ms}")
+    private String paymentTopicRetentionMs;
 
-    public KafkaTopicConfig(
-            KafkaTopicProperties orderTopicProperties,
-            @Value("#{${app.kafka.topics.payment-events.configs}}") Map<String, String> paymentTopicConfigs
-    ) {
+    public KafkaTopicConfig(KafkaTopicProperties orderTopicProperties) {
         this.orderTopicProperties = orderTopicProperties;
-        this.paymentTopicConfigs = paymentTopicConfigs;
     }
 
     @Bean
@@ -44,7 +45,7 @@ public class KafkaTopicConfig {
         return TopicBuilder.name(paymentTopicName)
                 .partitions(paymentTopicPartitions)
                 .replicas(paymentTopicReplicas)
-                .configs(paymentTopicConfigs)
+                .configs(paymentTopicConfigs())
                 .build();
     }
 
@@ -53,7 +54,15 @@ public class KafkaTopicConfig {
         return TopicBuilder.name(paymentTopicName + ".dlq")
                 .partitions(paymentTopicPartitions)
                 .replicas(paymentTopicReplicas)
-                .configs(paymentTopicConfigs)
+                .configs(paymentTopicConfigs())
                 .build();
+    }
+
+    private Map<String, String> paymentTopicConfigs() {
+        return Map.of(
+                "min.insync.replicas", paymentTopicMinInsyncReplicas,
+                "cleanup.policy", paymentTopicCleanupPolicy,
+                "retention.ms", paymentTopicRetentionMs
+        );
     }
 }

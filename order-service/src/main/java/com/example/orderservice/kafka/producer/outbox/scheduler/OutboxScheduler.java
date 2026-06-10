@@ -7,6 +7,7 @@ import com.example.orderservice.kafka.producer.outbox.service.OutboxProcessingSe
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -41,7 +42,7 @@ public class OutboxScheduler {
             return;
         }
 
-        log.debug("Claimed {} outbox event(s) for topic={}", events.size(), kafkaTopicProperties.getName());
+        log.info("Order outbox claimed count={} topic={}", events.size(), kafkaTopicProperties.getName());
         publishSequentially(events, 0);
     }
 
@@ -58,13 +59,32 @@ public class OutboxScheduler {
                 new ProducerRecord<>(kafkaTopicProperties.getName(), orderIdKey, event.getPayload());
 
         record.headers().add("orderStatus", orderStatus.getBytes(StandardCharsets.UTF_8));
+        log.info(
+                "Order event publish requested eventId={} orderId={} uniqueOrderNumber={} orderStatus={} topic={} key={}",
+                event.getId(),
+                event.getOrderId(),
+                event.getUniqueOrderNumber(),
+                status,
+                kafkaTopicProperties.getName(),
+                orderIdKey
+        );
 
         kafkaTemplate.send(record)
                 .whenComplete((result, throwable) -> {
                     try {
                         if (throwable == null) {
                             outboxProcessingService.markSent(event.getId());
-                            log.debug("Outbox event id={} sent to topic={}", event.getId(), kafkaTopicProperties.getName());
+                            RecordMetadata metadata = result.getRecordMetadata();
+                            log.info(
+                                    "Order event published eventId={} orderId={} uniqueOrderNumber={} orderStatus={} topic={} partition={} offset={}",
+                                    event.getId(),
+                                    event.getOrderId(),
+                                    event.getUniqueOrderNumber(),
+                                    status,
+                                    metadata.topic(),
+                                    metadata.partition(),
+                                    metadata.offset()
+                            );
                         } else {
                             outboxProcessingService.handlePublishFailure(
                                     event.getId(),

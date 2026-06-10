@@ -22,13 +22,9 @@ public class KafkaTopicConfig {
     private int orderTopicPartitions;
     @Value("${app.kafka.topics.order-events.replicas}")
     private int orderTopicReplicas;
-    private final Map<String, String> orderTopicConfigs;
 
-    public KafkaTopicConfig(
-            KafkaTopicProperties paymentTopicProperties, Map<String, String> orderTopicConfigs
-    ) {
+    public KafkaTopicConfig(KafkaTopicProperties paymentTopicProperties) {
         this.paymentTopicProperties = paymentTopicProperties;
-        this.orderTopicConfigs = orderTopicConfigs;
     }
 
     @Bean
@@ -45,7 +41,7 @@ public class KafkaTopicConfig {
         return TopicBuilder.name(orderTopicName + ".dlq")
                 .partitions(orderTopicPartitions)
                 .replicas(orderTopicReplicas)
-                .configs(orderTopicConfigs)
+                .configs(paymentTopicProperties.getConfigs())
                 .build();
     }
 }

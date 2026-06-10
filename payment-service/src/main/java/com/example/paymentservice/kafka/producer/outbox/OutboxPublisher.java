@@ -6,10 +6,12 @@ import com.example.paymentservice.events.outbox.OutboxStatus;
 import com.example.paymentservice.repository.OutboxEventRepository;
 import com.example.paymentservice.util.converter.JsonConverter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class OutboxPublisher {
 
@@ -24,8 +26,10 @@ public class OutboxPublisher {
             throw new IllegalArgumentException("paymentProcessedEvent must not be null");
         }
 
+        String payload = jsonConverter.toJson(paymentProcessedEvent);
+
         OutboxEvent outboxEvent = OutboxEvent.builder()
-                .payload(jsonConverter.toJson(paymentProcessedEvent))
+                .payload(payload)
                 .outboxStatus(OutboxStatus.NEW)
                 .paymentStatus(paymentProcessedEvent.getPaymentStatus())
                 .retryCount(INITIAL_RETRY_COUNT)
@@ -33,6 +37,15 @@ public class OutboxPublisher {
                 .orderId(paymentProcessedEvent.getOrderId())
                 .build();
 
-        outboxEventRepository.save(outboxEvent);
+        OutboxEvent savedEvent = outboxEventRepository.save(outboxEvent);
+        log.info(
+                "Payment outbox saved eventId={} orderId={} uniqueOrderNumber={} paymentStatus={} outboxStatus={} payloadBytes={}",
+                savedEvent.getId(),
+                savedEvent.getOrderId(),
+                savedEvent.getUniqueOrderNumber(),
+                savedEvent.getPaymentStatus(),
+                savedEvent.getOutboxStatus(),
+                payload.length()
+        );
     }
 }

@@ -2,6 +2,7 @@ package com.example.orderservice.config;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.TopicPartition;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.kafka.autoconfigure.ConcurrentKafkaListenerContainerFactoryConfigurer;
 import org.springframework.boot.kafka.autoconfigure.KafkaProperties;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +21,7 @@ import java.util.Map;
 
 @Configuration
 @EnableKafka
+@Slf4j
 public class KafkaConsumerConfig {
 
     private final KafkaProperties kafkaProperties;
@@ -38,11 +40,35 @@ public class KafkaConsumerConfig {
     public DefaultErrorHandler kafkaErrorHandler(KafkaTemplate<String, String> kafkaTemplate) {
         DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(
                 kafkaTemplate,
-                (ConsumerRecord<?, ?> record, Exception ex) ->
-                        new TopicPartition(record.topic() + ".dlq", record.partition())
+                (ConsumerRecord<?, ?> record, Exception ex) -> {
+                    log.error(
+                            "Kafka record sent to DLQ sourceTopic={} dlqTopic={} partition={} offset={} key={} exception={}",
+                            record.topic(),
+                            record.topic() + ".dlq",
+                            record.partition(),
+                            record.offset(),
+                            record.key(),
+                            ex.getClass().getSimpleName(),
+                            ex
+                    );
+                    return new TopicPartition(record.topic() + ".dlq", record.partition());
+                }
         );
 
         DefaultErrorHandler errorHandler = new DefaultErrorHandler(recoverer, new FixedBackOff(1_000L, 2L));
+        errorHandler.setRetryListeners((record, ex, deliveryAttempt) ->
+                log.warn(
+                        "Kafka record processing failed attempt={} topic={} partition={} offset={} key={} exception={} message={}",
+                        deliveryAttempt,
+                        record.topic(),
+                        record.partition(),
+                        record.offset(),
+                        record.key(),
+                        ex.getClass().getSimpleName(),
+                        ex.getMessage(),
+                        ex
+                )
+        );
         errorHandler.addNotRetryableExceptions(IllegalArgumentException.class);
         errorHandler.setCommitRecovered(true);
         return errorHandler;

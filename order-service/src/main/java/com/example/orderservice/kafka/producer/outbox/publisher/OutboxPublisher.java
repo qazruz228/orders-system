@@ -38,6 +38,14 @@ public class OutboxPublisher {
                 .build();
 
         OutboxEvent savedEvent = outboxEventRepository.save(outboxEvent);
-        log.debug("Saved outbox event with id={} and status={}", savedEvent.getId(), savedEvent.getOutboxStatus());
+        log.info(
+                "Order outbox saved eventId={} orderId={} uniqueOrderNumber={} orderStatus={} outboxStatus={} payloadBytes={}",
+                savedEvent.getId(),
+                savedEvent.getOrderId(),
+                savedEvent.getUniqueOrderNumber(),
+                savedEvent.getOrderStatus(),
+                savedEvent.getOutboxStatus(),
+                payload.length()
+        );
     }
 }
