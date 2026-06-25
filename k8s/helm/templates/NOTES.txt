@@ -1,0 +1,9 @@
+Order system was installed.
+
+Kafka topics:
+  Enabled: {{ .Values.kafkaTopics.enabled }}
+
+{{- if .Values.kafkaTopics.enabled }}
+Strimzi KafkaTopic resources were rendered for cluster "{{ include "order-system.kafkaClusterName" . }}".
+Make sure the Strimzi operator exists before installing this chart.
+{{- end }}

@@ -1,0 +1,26 @@
+{{- if .Values.kafkaTopics.enabled }}
+{{- $root := . -}}
+{{- range $topic := .Values.kafkaTopics.topics }}
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaTopic
+metadata:
+  name: {{ include "order-system.kafkaTopicResourceName" (dict "root" $root "topic" $topic) }}
+  labels:
+    {{- include "order-system.labels" $root | nindent 4 }}
+    app.kubernetes.io/component: kafka-topic
+    {{ $root.Values.kafkaTopics.strimzi.clusterLabel }}: {{ include "order-system.kafkaClusterName" $root | quote }}
+  {{- with $root.Values.kafkaTopics.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  topicName: {{ $topic.name | quote }}
+  partitions: {{ $topic.partitions }}
+  replicas: {{ $topic.replicas }}
+  {{- with $topic.config }}
+  config:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}

@@ -56,12 +56,13 @@ public class CreateOrderHandler implements OrderHandler {
         Transaction transaction = converterEventToTransaction.convert(orderEvent);
         transaction.setStatus(TransactionStatus.PENDING);
         Transaction savedTransaction = transactionRepository.save(transaction);
+        Transaction transactionToLog = savedTransaction != null ? savedTransaction : transaction;
         log.info(
                 "Transaction created transactionId={} orderId={} uniqueOrderNumber={} transactionStatus={}",
-                savedTransaction.getId(),
-                savedTransaction.getOrderId(),
-                savedTransaction.getUniqueOrderNumber(),
-                savedTransaction.getStatus()
+                transactionToLog.getId(),
+                transactionToLog.getOrderId(),
+                transactionToLog.getUniqueOrderNumber(),
+                transactionToLog.getStatus()
         );
     }
 

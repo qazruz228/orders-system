@@ -38,13 +38,14 @@ public class OutboxPublisher {
                 .build();
 
         OutboxEvent savedEvent = outboxEventRepository.save(outboxEvent);
+        OutboxEvent eventToLog = savedEvent != null ? savedEvent : outboxEvent;
         log.info(
                 "Payment outbox saved eventId={} orderId={} uniqueOrderNumber={} paymentStatus={} outboxStatus={} payloadBytes={}",
-                savedEvent.getId(),
-                savedEvent.getOrderId(),
-                savedEvent.getUniqueOrderNumber(),
-                savedEvent.getPaymentStatus(),
-                savedEvent.getOutboxStatus(),
+                eventToLog.getId(),
+                eventToLog.getOrderId(),
+                eventToLog.getUniqueOrderNumber(),
+                eventToLog.getPaymentStatus(),
+                eventToLog.getOutboxStatus(),
                 payload.length()
         );
     }

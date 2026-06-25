@@ -1,0 +1,16 @@
+apiVersion: v2
+name: order-system
+description: Helm chart for the order-system services and Kafka topic provisioning
+type: application
+version: 0.1.0
+appVersion: "0.0.1-SNAPSHOT"
+kubeVersion: ">=1.27.0-0"
+dependencies:
+  - name: order-service
+    version: 0.1.0
+    repository: file://charts/order-service
+    condition: order-service.enabled
+  - name: payment-service
+    version: 0.1.0
+    repository: file://charts/payment-service
+    condition: payment-service.enabled

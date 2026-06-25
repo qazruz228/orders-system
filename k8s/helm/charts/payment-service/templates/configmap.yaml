@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "payment-service.fullname" . }}
+  labels:
+    {{- include "payment-service.labels" . | nindent 4 }}
+data:
+  SPRING_APPLICATION_NAME: payment-service
+  SERVER_PORT: {{ .Values.config.serverPort | quote }}
+  SERVER_SHUTDOWN: graceful
+  SPRING_LIFECYCLE_TIMEOUT_PER_SHUTDOWN_PHASE: 30s
+  SPRING_DATASOURCE_URL: {{ .Values.config.datasource.url | quote }}
+  SPRING_JPA_SHOW_SQL: {{ .Values.config.jpa.showSql | quote }}
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: {{ include "payment-service.kafkaBootstrapServers" . | quote }}
+  SPRING_KAFKA_LISTENER_CONCURRENCY: {{ .Values.config.kafka.listenerConcurrency | quote }}
+  APP_KAFKA_ADMIN_ENABLED: {{ .Values.config.kafka.adminEnabled | quote }}
+  APP_KAFKA_TOPICS_ORDER_EVENTS_NAME: {{ .Values.config.kafka.topics.orderEvents.name | quote }}
+  APP_KAFKA_TOPICS_PAYMENT_EVENTS_NAME: {{ .Values.config.kafka.topics.paymentEvents.name | quote }}
+  OUTBOX_POLLING_INTERVAL: {{ .Values.config.outbox.pollingInterval | quote }}
+  OUTBOX_BATCH_SIZE: {{ .Values.config.outbox.batchSize | quote }}
+  OUTBOX_MAX_RETRY: {{ .Values.config.outbox.maxRetry | quote }}
+  OUTBOX_PROCESSING_TIMEOUT: {{ .Values.config.outbox.processingTimeout | quote }}
+  MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health,info
+  MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED: "true"
+  MANAGEMENT_HEALTH_LIVENESSSTATE_ENABLED: "true"
+  MANAGEMENT_HEALTH_READINESSSTATE_ENABLED: "true"
