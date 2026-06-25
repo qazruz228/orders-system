@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/001.create-table-processed_events.sql
+  - include:
+      file: db/changelog/002.create-table-transactions.sql
+  - include:
+      file: db/changelog/003.create-table-outbox_events.sql
+  - include:
+      file: db/changelog/004.alter-table-transactions-add-version.sql

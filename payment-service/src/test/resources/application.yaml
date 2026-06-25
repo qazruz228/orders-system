@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: payment-service-test
+  datasource:
+    url: jdbc:h2:mem:paymentdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: payment-service-test-group
+    listener:
+      auto-startup: false
+
+app:
+  kafka:
+    admin:
+      enabled: false
+    topics:
+      order-events:
+        name: order-events
+        partitions: 1
+        replicas: 1
+        configs:
+          min.insync.replicas: 1
+          cleanup.policy: delete
+          retention.ms: 604800000
+      payment-events:
+        name: payment-events
+        partitions: 1
+        replicas: 1
+        configs:
+          min.insync.replicas: 1
+          cleanup.policy: delete
+          retention.ms: 604800000
+
+outbox:
+  enabled: false

@@ -1,0 +1,61 @@
+{{- if .Values.kafka.enabled }}
+apiVersion: kafka.strimzi.io/v1
+kind: Kafka
+metadata:
+  name: {{ include "order-system.kafkaClusterName" . }}
+  labels:
+    {{- include "order-system.labels" . | nindent 4 }}
+    app.kubernetes.io/component: kafka
+spec:
+  kafka:
+    version: {{ .Values.kafka.version | quote }}
+    replicas: {{ .Values.kafka.replicas }}
+    listeners:
+      {{- if .Values.kafka.listeners.plain.enabled }}
+      - name: plain
+        port: {{ .Values.kafka.listeners.plain.port }}
+        type: internal
+        tls: false
+      {{- end }}
+      {{- if .Values.kafka.listeners.tls.enabled }}
+      - name: tls
+        port: {{ .Values.kafka.listeners.tls.port }}
+        type: internal
+        tls: true
+      {{- end }}
+    config:
+      {{- toYaml .Values.kafka.config | nindent 6 }}
+    storage:
+      {{- if eq .Values.kafka.storage.type "persistent-claim" }}
+      type: persistent-claim
+      size: {{ .Values.kafka.storage.size }}
+      deleteClaim: false
+      {{- with .Values.kafka.storage.class }}
+      class: {{ . | quote }}
+      {{- end }}
+      {{- else }}
+      type: ephemeral
+      {{- end }}
+  zookeeper:
+    replicas: {{ .Values.kafka.zookeeper.replicas }}
+    storage:
+      {{- if eq .Values.kafka.zookeeper.storage.type "persistent-claim" }}
+      type: persistent-claim
+      size: {{ .Values.kafka.zookeeper.storage.size }}
+      deleteClaim: false
+      {{- with .Values.kafka.zookeeper.storage.class }}
+      class: {{ . | quote }}
+      {{- end }}
+      {{- else }}
+      type: ephemeral
+      {{- end }}
+  {{- if or .Values.kafka.entityOperator.topicOperator .Values.kafka.entityOperator.userOperator }}
+  entityOperator:
+    {{- if .Values.kafka.entityOperator.topicOperator }}
+    topicOperator: {}
+    {{- end }}
+    {{- if .Values.kafka.entityOperator.userOperator }}
+    userOperator: {}
+    {{- end }}
+  {{- end }}
+{{- end }}

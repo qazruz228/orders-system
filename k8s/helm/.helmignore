@@ -1,0 +1,11 @@
+.git/
+.gitignore
+.svn/
+.hg/
+.hgignore
+.DS_Store
+*.swp
+*.bak
+*.tmp
+*.orig
+README.md

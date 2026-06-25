@@ -1,0 +1,155 @@
+{{- if .Values.postgresql.enabled }}
+{{- $root := . -}}
+{{- range $key, $instance := .Values.postgresql.instances }}
+{{- if $instance.enabled }}
+---
+{{- if not $instance.existingSecret }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $instance.name }}-credentials
+  labels:
+    {{- include "order-system.labels" $root | nindent 4 }}
+    app.kubernetes.io/component: postgresql
+    app.kubernetes.io/instance-name: {{ $key | quote }}
+type: Opaque
+stringData:
+  {{ $instance.usernameKey }}: {{ $instance.username | quote }}
+  {{ $instance.passwordKey }}: {{ $instance.password | quote }}
+---
+{{- end }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $instance.name }}
+  labels:
+    {{- include "order-system.labels" $root | nindent 4 }}
+    app.kubernetes.io/component: postgresql
+    app.kubernetes.io/instance-name: {{ $key | quote }}
+spec:
+  type: ClusterIP
+  ports:
+    - name: postgresql
+      port: 5432
+      targetPort: postgresql
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: {{ include "order-system.name" $root }}
+    app.kubernetes.io/instance: {{ $root.Release.Name }}
+    app.kubernetes.io/component: postgresql
+    app.kubernetes.io/instance-name: {{ $key | quote }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ $instance.name }}
+  labels:
+    {{- include "order-system.labels" $root | nindent 4 }}
+    app.kubernetes.io/component: postgresql
+    app.kubernetes.io/instance-name: {{ $key | quote }}
+spec:
+  serviceName: {{ $instance.name }}
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "order-system.name" $root }}
+      app.kubernetes.io/instance: {{ $root.Release.Name }}
+      app.kubernetes.io/component: postgresql
+      app.kubernetes.io/instance-name: {{ $key | quote }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "order-system.name" $root }}
+        app.kubernetes.io/instance: {{ $root.Release.Name }}
+        app.kubernetes.io/component: postgresql
+        app.kubernetes.io/instance-name: {{ $key | quote }}
+      {{- with $root.Values.postgresql.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: postgresql
+          image: "{{ $root.Values.postgresql.image.repository }}:{{ $root.Values.postgresql.image.tag }}"
+          imagePullPolicy: {{ $root.Values.postgresql.image.pullPolicy }}
+          ports:
+            - name: postgresql
+              containerPort: 5432
+              protocol: TCP
+          env:
+            - name: POSTGRES_DB
+              value: {{ $instance.database | quote }}
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default (printf "%s-credentials" $instance.name) $instance.existingSecret }}
+                  key: {{ $instance.usernameKey }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default (printf "%s-credentials" $instance.name) $instance.existingSecret }}
+                  key: {{ $instance.passwordKey }}
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" -h 127.0.0.1
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" -h 127.0.0.1
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 5
+          resources:
+            {{- toYaml $root.Values.postgresql.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        {{- if not $root.Values.postgresql.persistence.enabled }}
+        - name: data
+          emptyDir: {}
+        {{- end }}
+      {{- with $root.Values.postgresql.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $root.Values.postgresql.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $root.Values.postgresql.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  {{- if $root.Values.postgresql.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        {{- with $root.Values.postgresql.persistence.storageClassName }}
+        storageClassName: {{ . | quote }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ $root.Values.postgresql.persistence.size }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

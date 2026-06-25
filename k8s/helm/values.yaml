@@ -1,0 +1,141 @@
+global:
+  imagePullSecrets: []
+  kafka:
+    bootstrapServers: order-system-kafka-bootstrap:9092
+
+
+nameOverride: ""
+fullnameOverride: ""
+
+postgresql:
+  enabled: true
+  image:
+    repository: postgres
+    tag: "16-alpine"
+    pullPolicy: IfNotPresent
+  persistence:
+    enabled: true
+    size: 1Gi
+    storageClassName: ""
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  podAnnotations: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  instances:
+    order:
+      enabled: true
+      name: postgres-order
+      database: ordersystemdb
+      username: ordersystem
+      password: ordersystem
+      existingSecret: ""
+      usernameKey: username
+      passwordKey: password
+    payment:
+      enabled: true
+      name: postgres-payment
+      database: paymentsystemdb
+      username: paymentsystem
+      password: paymentsystem
+      existingSecret: ""
+      usernameKey: username
+      passwordKey: password
+
+kafka:
+  enabled: true
+  name: order-system-kafka
+  version: "3.9.0"
+  replicas: 3
+  listeners:
+    plain:
+      enabled: true
+      port: 9092
+    tls:
+      enabled: false
+      port: 9093
+  storage:
+    type: ephemeral
+    size: 5Gi
+    class: ""
+  config:
+    offsets.topic.replication.factor: 3
+    transaction.state.log.replication.factor: 3
+    transaction.state.log.min.isr: 2
+    default.replication.factor: 3
+    min.insync.replicas: 2
+    inter.broker.protocol.version: "3.9"
+  entityOperator:
+    topicOperator: true
+    userOperator: true
+  zookeeper:
+    replicas: 3
+    storage:
+      type: ephemeral
+      size: 5Gi
+      class: ""
+
+kafkaTopics:
+  enabled: true
+  annotations: {}
+  strimzi:
+    clusterLabel: strimzi.io/cluster
+  topics:
+    - name: order-events
+      partitions: 3
+      replicas: 3
+      config:
+        min.insync.replicas: "2"
+        cleanup.policy: delete
+        retention.ms: "604800000"
+    - name: order-events.dlq
+      partitions: 3
+      replicas: 3
+      config:
+        min.insync.replicas: "2"
+        cleanup.policy: delete
+        retention.ms: "604800000"
+    - name: payment-events
+      partitions: 3
+      replicas: 3
+      config:
+        min.insync.replicas: "2"
+        cleanup.policy: delete
+        retention.ms: "604800000"
+    - name: payment-events.dlq
+      partitions: 3
+      replicas: 3
+      config:
+        min.insync.replicas: "2"
+        cleanup.policy: delete
+        retention.ms: "604800000"
+
+order-service:
+  enabled: true
+  image:
+    repository: order-service
+    tag: latest
+    pullPolicy: IfNotPresent
+  config:
+    datasource:
+      url: jdbc:postgresql://postgres-order:5432/ordersystemdb
+      username: ordersystem
+      password: ordersystem
+
+payment-service:
+  enabled: true
+  image:
+    repository: payment-service
+    tag: latest
+    pullPolicy: IfNotPresent
+  config:
+    datasource:
+      url: jdbc:postgresql://postgres-payment:5432/paymentsystemdb
+      username: paymentsystem
+      password: paymentsystem

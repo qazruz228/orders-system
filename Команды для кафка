@@ -1,0 +1,12 @@
+Удалить топик:
+docker exec -it kafka-1 /opt/bitnami/kafka/bin/kafka-topics.sh
+--bootstrap-server kafka-1:9092 --delete --topic order-events
+
+Создать топик:
+docker exec -it kafka-1 /opt/bitnami/kafka/bin/kafka-topics.sh
+--bootstrap-server kafka-1:9092 --create --topic order-events --partitions 3 --replication-factor 3 --config min.insync.replicas=2
+
+Описать топик:
+docker exec -it kafka-1 /opt/bitnami/kafka/bin/kafka-topics.sh
+--bootstrap-server kafka-1:9092 --describe --topic order-events
+
