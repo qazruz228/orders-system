@@ -3,7 +3,6 @@ spring:
     name: payment-service
 
 
-
   datasource:
     url: jdbc:postgresql://localhost:5436/paymentsystemdb
     username: paymentsystem
@@ -63,7 +62,7 @@ app:
         partitions: 3
         replicas: 3
         configs:
-          min.insync.replicas: 3
+          min.insync.replicas: 2
           cleanup.policy: delete
           retention.ms: 604800000
       payment-events:
@@ -71,7 +70,7 @@ app:
         partitions: 3
         replicas: 3
         configs:
-          min.insync.replicas: 3
+          min.insync.replicas: 2
           cleanup.policy: delete
           retention.ms: 604800000
 
@@ -81,3 +80,20 @@ outbox:
   batch-size: 5
   max-retry: 5
   processing-timeout: PT2M
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+server:
+  port: 8089

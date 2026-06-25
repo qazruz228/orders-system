@@ -1,7 +1,7 @@
 --liquibase formatted sql
 
---changeset Codex:003-create-table-outbox-events
-CREATE TABLE outbox_events (
+--changeset Sergey:003-create-table-outbox-events
+CREATE TABLE IF NOT EXISTS outbox_events (
     id BIGSERIAL PRIMARY KEY,
     payload TEXT NOT NULL,
     outbox_status VARCHAR(50) NOT NULL,

@@ -2,14 +2,15 @@ package com.example.orderservice.config;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Validated
+@Component
 @ConfigurationProperties(prefix = "app.kafka.topics.order-events")
 public class KafkaTopicProperties {
 
@@ -22,7 +23,6 @@ public class KafkaTopicProperties {
     @Min(1)
     private int replicas;
 
-    @NotEmpty
     private Map<String, String> configs = new HashMap<>();
 
     public String getName() {
@@ -45,7 +45,7 @@ public class KafkaTopicProperties {
         return replicas;
     }
 
-    public void setReplicas(short replicas) {
+    public void setReplicas(int replicas) {
         this.replicas = replicas;
     }
 

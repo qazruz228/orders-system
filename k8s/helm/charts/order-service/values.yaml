@@ -1,0 +1,122 @@
+replicaCount: 1
+
+image:
+  repository: order-service
+  pullPolicy: IfNotPresent
+  tag: latest
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+  automountServiceAccountToken: false
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+
+service:
+  type: ClusterIP
+  port: 8091
+  targetPort: 8091
+
+config:
+  serverPort: 8091
+  datasource:
+    url: jdbc:postgresql://postgres-order:5432/ordersystemdb
+    username: ordersystem
+    password: ordersystem
+    existingSecret: ""
+    usernameKey: username
+    passwordKey: password
+  kafka:
+    bootstrapServers: ""
+    listenerConcurrency: "3"
+    adminEnabled: "false"
+    topics:
+      orderEvents:
+        name: order-events
+      paymentEvents:
+        name: payment-events
+  outbox:
+    pollingInterval: "30000"
+    batchSize: "5"
+    maxRetry: "5"
+    processingTimeout: PT2M
+  jpa:
+    showSql: "false"
+
+extraEnv: []
+
+autoscaling:
+  enabled: false
+
+probes:
+  liveness:
+    path: /actuator/health/liveness
+    initialDelaySeconds: 20
+    periodSeconds: 20
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readiness:
+    path: /actuator/health/readiness
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  startup:
+    path: /actuator/health/liveness
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 30
+
+ingress:
+  enabled: true
+  className: ""
+  annotations: {}
+  hosts:
+    - host: order-service.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi
+
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+networkPolicy:
+  enabled: true
+  ingressFrom: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints: []
